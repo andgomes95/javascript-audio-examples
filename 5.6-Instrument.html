@@ -1,0 +1,153 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+<script src='Pong.js'></script>
+<!--script src="https://cdn.rawgit.com/processing-js/processing-js/v1.4.8/processing.min.js"></script-->
+<script src="processing.min.js"></script>
+</head>
+<body>
+
+<script>
+var context = new (window.AudioContext || window.webkitAudioContext)();
+</script>
+
+<script type="application/processing" data-processing-target="pjs">
+int numBalls = 2;
+float spring = 0.05;
+float gravity = 0.05;
+float friction = -1.0;
+Ball[] balls = new Ball[numBalls];
+
+void setup() {
+  size(640, 360);
+  for (int i = 0; i < numBalls; i++) {
+    balls[i] = new Ball(random(width), random(height), random(30, 70), i, balls);
+  }
+  noStroke();
+  fill(255, 204);
+}
+
+void draw() {
+  background(0);
+  for (Ball ball : balls) {
+    ball.collide();
+    ball.move();
+    ball.display();
+  }
+   if (mousePressed) {
+     if(mouseX > width / 2 && mouseY > height / 2) 
+        for (Ball ball : balls) {
+          ball.x += 5;
+          ball.y += 5;
+          var pong = new Pong(context);
+          pong.play(100);
+        }
+     if(mouseX > width / 2 && mouseY < height / 2) 
+        for (Ball ball : balls) {
+          ball.x += 5;
+          ball.y -= 5;
+          var pong = new Pong(context);
+          pong.play(50);
+        }
+     if(mouseX < width / 2 && mouseY > height / 2) 
+        for (Ball ball : balls) {
+          ball.x -= 5;
+          ball.y += 5;
+          var pong = new Pong(context);
+          pong.play(75);
+        }
+     if(mouseX < width / 2 && mouseY < height / 2) 
+        for (Ball ball : balls) {
+          ball.x -= 5;
+          ball.y -= 5;
+          var pong = new Pong(context);
+          pong.play(25);
+        }
+  }
+}
+
+/////////////////////////////////////////////////////////////////////
+class Ball {
+  
+  float x, y;
+  float diameter;
+  float vx = 0;
+  float vy = 0;
+  int id;
+  Ball[] others;
+  color my_color = #FFFFFF;
+  var pong = new Pong(context);
+ 
+  Ball(float xin, float yin, float din, int idin, Ball[] oin) {
+    x = xin;
+    y = yin;
+    diameter = din;
+    id = idin;
+    others = oin;
+  } 
+  
+  void collide() {
+    for (int i = id + 1; i < numBalls; i++) {
+      float dx = others[i].x - x;
+      float dy = others[i].y - y;
+      float distance = sqrt(dx*dx + dy*dy);
+      float minDist = others[i].diameter/2 + diameter/2;
+      if (distance < minDist) { 
+        float angle = atan2(dy, dx);
+        float targetX = x + cos(angle) * minDist;
+        float targetY = y + sin(angle) * minDist;
+        float ax = (targetX - others[i].x) * spring;
+        float ay = (targetY - others[i].y) * spring;
+        vx -= ax;
+        vy -= ay;
+        others[i].vx += ax;
+        others[i].vy += ay;
+        my_color = #FFFFFF;
+        pong.play(50);
+        others[i].my_color = #FFFFFF;
+      }
+    }   
+  }
+  
+  void move() {
+    vy += gravity;
+    x += vx;
+    y += vy;
+    if (x + diameter/2 > width) {
+      x = width - diameter/2;
+      vx *= friction; 
+      my_color = #FF0000;
+      pong.play(52);
+    }
+    else if (x - diameter/2 < 0) {
+      x = diameter/2;
+      vx *= friction;
+      my_color = #0000FF; 
+      pong.play(54);
+    }
+    if (y + diameter/2 > height) {
+      y = height - diameter/2;
+      vy *= friction; 
+      my_color = #00FF00; 
+      pong.play(56);
+    } 
+    else if (y - diameter/2 < 0) {
+      y = diameter/2;
+      vy *= friction;
+      my_color = #FF00FF; 
+      pong.play(58);
+    }
+  }
+  
+  void display() {
+    fill(my_color);
+    ellipse(x, y, diameter, diameter);
+  }
+}
+</script>
+
+<canvas id="pjs"> </canvas>
+<br />
+Adapted from: https://processing.org/examples/bouncybubbles.html
+</body>
+</html>

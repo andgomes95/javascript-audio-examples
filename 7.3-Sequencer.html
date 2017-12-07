@@ -1,0 +1,477 @@
+<html>
+<head>
+<script src='Maraca.js'></script>
+<script src='Pong.js'></script>
+<script src='Drum.js'></script>
+<script src='Block.js'></script>
+<style>
+html, body {
+    height: 100%;
+}
+
+html {
+    display: table;
+    margin: auto;
+}
+
+body {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+input{
+   height: 40px;
+   width: 40px;
+   border: 0px;
+   text-align: center;
+   background-color: transparent;
+   font-size: 24px;
+}
+
+table{
+   border: 0px;
+   padding: 0px;
+}
+.tr0 td, .tr3 td, .tr6 td{
+   border-top: 1px solid #000;
+}
+
+.tr2 td, .tr5 td, .tr8 td{
+   border-bottom: 1px solid #000;
+}
+
+.td0, .td3, .td6{
+   border-left: 1px solid #000;
+}
+
+.td2, .td5, .td8{
+   border-right: 1px solid #000;
+}
+
+.tr0 td, .tr3 td, .tr6 td{
+   background-color: #999;
+}
+
+.tr1 td, .tr4 td, .tr7 td{
+   background-color: #AAA;
+}
+
+.tr2 td, .tr5 td, .tr8 td{
+   background-color: #CCC;
+}
+
+.wrong{
+   background-color: #F00;
+}
+
+.ok{
+   background-color: transparent;
+}
+
+.normal{
+   font-weight: none;
+   background-color: transparent;
+}
+
+.selected{
+   font-weight: bold;
+   background-color: #FFF;
+}
+
+.playing{
+   font-weight: bold;
+   background-color: #FF0;
+}
+
+#main {
+   float:left;
+   width:500px;
+}
+
+#sidebar {
+   float:right;
+   width:250px;
+}
+
+#completed{
+   border: 1px solid #000;
+   background-color: #CCC;
+   padding: 3px;
+   text-align: center;
+   font-weight: bold;
+}
+</style>
+<script>
+
+var matrix = [];
+function checkValueEntered(){
+   var completed = true;
+   // paint it normal
+   for(var i = 0 ; i < 9 ; i++){
+      for(var j = 0 ; j < 9 ; j++){
+         document.getElementById("input-" + i + j).setAttribute("class","ok");
+      }
+   }
+
+   //get values
+   for(var i = 0 ; i < 9 ; i++){
+      matrix[i] = [0,0,0,0,0,0,0,0,0];
+      for(var j = 0 ; j < 9 ; j++){
+         matrix[i][j] = parseInt(document.getElementById("input-" + i + j).value);
+         if(isNaN(matrix[i][j])){
+            document.getElementById("input-" + i + j).value = '';
+            matrix[i][j] = 0;
+            completed = false;
+         }
+         if(matrix[i][j] > 9 || matrix[i][j] < 1){
+            document.getElementById("input-" + i + j).value = '';
+            matrix[i][j] = 0;
+            completed = false;
+         }
+      }
+   }
+   //check lines
+   for(var i = 0 ; i < 9 ; i++){
+      var temp = [0,0,0, 0,0,0, 0,0,0, 0];
+      for(var j = 0 ; j < 9 ; j++){
+         if(matrix[i][j] == 0) continue;
+         if(temp[matrix[i][j]] == 0){
+            temp[matrix[i][j]] = 1;
+         }else{
+            document.getElementById("input-" + i + j).setAttribute("class","wrong");
+            completed = false;
+            }
+      }
+   }
+
+   //check columns
+   for(var i = 0 ; i < 9 ; i++){
+      var temp = [0,0,0, 0,0,0, 0,0,0, 0];
+      for(var j = 0 ; j < 9 ; j++){
+         if(matrix[j][i] == 0) continue;
+         if(temp[matrix[j][i]] == 0){
+            temp[matrix[j][i]] = 1;
+         }else{
+            document.getElementById("input-" + j + i).setAttribute("class","wrong");
+            completed = false;
+            }
+      }
+   }
+
+   //check regions
+   for(var i = 0 ; i < 9 ; i++){
+      var temp = [0,0,0, 0,0,0, 0,0,0, 0];
+      for(var j = 0 ; j < 9 ; j++){
+         var quadrant = parseInt(i / 3);
+         var x = parseInt(j/3) + (i % 3) * 3;
+         var y = j % 3 + parseInt(i/3) * 3;
+         if(matrix[x][y] == 0) continue;
+         if(temp[matrix[x][y]] == 0){
+            temp[matrix[x][y]] = 1;
+         }else{
+            document.getElementById("input-" + x + y).setAttribute("class","wrong");
+            completed = false;
+            }
+      }
+   }
+   if(completed) game_over();
+}
+
+function game_over(){
+   document.getElementById('completed').setAttribute("style","display:'';");
+   var els = document.getElementsByTagName("INPUT");
+   for(var i = 0 ; i < els.length ; i++){
+      els[i].removeAttribute("readonly");
+   }
+}
+
+function textOnBlur(e){
+   checkValueEntered();
+   e.target.setAttribute("class","normal");
+}
+
+function textOnFocus(e){
+   e.target.setAttribute("class","selected");
+}
+
+window.onload = function(){
+   var table = document.createElement("TABLE");
+   for(var i = 0 ; i < 9 ; i++){
+      var line = document.createElement("TR");
+      line.setAttribute("class", "tr"+i);
+      table.appendChild(line);
+      for(var j = 0 ; j < 9 ; j++){
+         var cell = document.createElement("TD");
+         cell.setAttribute("class", "td"+j);
+         cell.setAttribute("id", "td"+i+j);
+         line.appendChild(cell);
+         var text = document.createElement("INPUT");
+         text.setAttribute("id", "input-" + i + j);
+         text.setAttribute("line", i);
+         text.setAttribute("col", j);
+         text.addEventListener('blur', textOnBlur, false);
+         text.addEventListener('focus', textOnFocus, false);
+         cell.appendChild(text);
+      }
+   }
+   document.getElementById('sudoku').appendChild(table);
+   setTime(50);
+}
+
+
+document.onkeyup = function keyPress(e){
+   var el = e.target;
+   var line = parseInt(el.getAttribute("line"));
+   var col = parseInt(el.getAttribute("col"));
+   var key = (window.event)? e.keyCode : e.which;
+   if(isNaN(line) || isNaN(col))
+      return;
+   document.getElementById("input-"+line + col).setAttribute("class","normal");
+   switch(key){
+      case 37:{ //Up
+         col = (col > 0)? col - 1 : 8;
+         break;
+      }
+      case 38:{ //left
+         line = (line > 0)? line - 1 : 8;
+         break;
+      }
+      case 39:{ //down
+         col = (col < 8)? col + 1 : 0;
+         break;
+      }
+      case 40:{ //right
+         line = (line < 8)? line + 1 : 0;
+         break;
+      }
+      case 8:{ // supress backspace
+         return false;
+      }
+   }
+   document.getElementById("input-"+line + col).focus();
+   document.getElementById("input-"+line + col).setAttribute("class","selected");
+   return;
+}
+
+// -----------------------------------------------------------------------------
+// Create new game
+// -----------------------------------------------------------------------------
+
+function matrix_to_puzzle(){
+   for(var i = 0 ; i < 9 ; i++){
+      for(var j = 0 ; j < 9 ; j++){
+         document.getElementById("input-"+i + j).value = matrix[i][j];
+         if(matrix[i][j] > 0)
+         document.getElementById("input-"+i + j).setAttribute("readonly",true);
+      }
+   }
+   checkValueEntered();
+}
+
+
+function initial_solution(){
+   matrix = [
+      [1,4,7,2,5,8,3,6,9],
+      [2,5,8,3,6,9,1,4,7],
+      [3,6,9,1,4,7,2,5,8],
+      [4,7,1,5,8,2,6,9,3],
+      [5,8,2,6,9,3,4,7,1],
+      [6,9,3,4,7,1,5,8,2],
+      [7,1,4,8,2,5,9,3,6],
+      [8,2,5,9,3,6,7,1,4],
+      [9,3,6,7,1,4,8,2,5],
+      ];
+}
+
+function swap_row(){
+   // swap rows on same quadrant
+   var src = Math.floor(Math.random() * 9);
+   var coin = Math.floor(Math.random() * 1) + 1;
+   var sink;
+   if(src % 3 == 0 && coin == 0) sink = 1;
+   if(src % 3 == 0 && coin == 1) sink = 2;
+   if(src % 3 == 1 && coin == 0) sink = 1;
+   if(src % 3 == 1 && coin == 1) sink = -1;
+   if(src % 3 == 2 && coin == 0) sink = -1;
+   if(src % 3 == 2 && coin == 1) sink = -2;
+
+   var temp = matrix[src];
+   matrix[src] = matrix[src + sink];
+   matrix[src + sink] = temp;
+}
+
+function mirror(){
+   // swap row and col
+   var temp = [];
+   for(var i = 0 ; i < 9 ; i++)
+      temp[i] = [];
+   for(var i = 0 ; i < 9 ; i++){
+      for(var j = 0 ; j < 9 ; j++){
+         temp[i][j] = matrix[j][i];
+      }
+   }
+   matrix = temp;
+}
+
+function rotate(){
+   // swap row and col
+   var temp = [];
+   for(var i = 0 ; i < 9 ; i++)
+      temp[i] = [];
+   for(var i = 0 ; i < 9 ; i++){
+      for(var j = 0 ; j < 9 ; j++){
+         temp[8 - j][i] = matrix[i][j];
+      }
+   }
+   matrix = temp;
+}
+
+function remove_digits(level){
+   for(var i = 0 ; i < level ; i++){
+      var x = Math.floor(Math.random() * 9);
+      var y = Math.floor(Math.random() * 9);
+      matrix[x][y] = 0;
+      matrix[y][x] = 0;
+   }
+}
+
+function set_puzzle_enabled(){
+   for(var i = 0 ; i < 9 ; i++){
+      for(var j = 0 ; j < 9 ; j++){
+         document.getElementById("input-"+i + j).removeAttribute("readonly");
+      }
+   }
+}
+
+function generate_game(level){
+   document.getElementById('completed').setAttribute("style","display:none;");
+   var amount = 20;
+   initial_solution();
+   set_puzzle_enabled();
+   remove_digits(level);
+   for(var i = 0 ; i < amount ; i++){
+      swap_row();
+      swap_row();
+      mirror();
+   }
+   matrix_to_puzzle();
+}
+
+// -----------------------------------------------------------------------------
+// Music part!
+// -----------------------------------------------------------------------------
+var count = 0;
+var timeout = 0;
+var time = 500;
+
+var context = new (window.AudioContext || window.webkitAudioContext)();
+
+function setTime(value){
+   document.getElementById("showtime").value = value;
+   document.getElementById("timerange").value = value;
+   time = 250 / (value / 60);
+}
+
+function play_sound(x,y,value){
+   if(value == '')
+      return;
+
+   switch((value) % 9){
+      case 0:{
+         var maraca = new Maraca(context);
+         maraca.play(0 + (value * 2));
+         break;
+      }
+      case 1:{
+         var kick = new Drum(context);
+         kick.play(60 + (value * 2));
+         break;
+      }
+      case 2:{
+         var bongo1 = new Drum(context);
+         bongo1.play(72 + (value * 2));
+         break;
+      }
+      case 3: {
+         var bongo2 = new Drum(context);
+         bongo2.play(84 + (value * 2));
+         break;
+      }
+      case 4:{
+         var pong1 = new Pong(context);
+         pong1.play(50 + (value * 2));
+         break;
+      }
+      case 5:{
+         var pong2 = new Pong(context);
+         pong2.play(80 + (value * 2));
+         break;
+      }
+      case 6:{
+         var block = new Block(context);
+         block.play(105 + (value * 2));
+         break;
+      }
+      case 7:{
+         var block = new Block(context);
+         block.play(60 + (value * 2));
+         break;
+      }
+      case 8:{
+         var block = new Block(context);
+         block.play(20 + (value * 2));
+         break;
+      }
+   }
+}
+
+function start(){
+   var lastcount = (count > 0 )? count - 1 : 80;
+   var lastx = parseInt(lastcount / 9);
+   var lasty = lastcount % 9;
+   document.getElementById("input-"+lastx+lasty).setAttribute("class","normal");
+
+   var x = parseInt(count / 9);
+   var y = count % 9;
+   var value = document.getElementById("input-"+x+y).value;
+   play_sound(x,y,value);
+   document.getElementById("input-"+x+y).setAttribute("class","playing");
+   count = (count > 79)? 0 : count + 1;
+   timeout = setTimeout(function() {start();},time);
+}
+
+function stop(){
+   clearTimeout(timeout);
+   count = 0;
+}
+</script>
+
+</head>
+<body>
+<div id=main>
+<div id='sudoku'></div>
+<button onclick='generate_game(20);'>Generate Easy</button>
+<button onclick='generate_game(40);'>Generate Medium</button>
+<button onclick='generate_game(60);'>Generate Hard</button>
+</div>
+<div id=sidebar>
+Let's play it!<br />
+<button onclick='start();' id=start>start</button>
+<button onclick='stop();' id=stop>stop</button>
+<br />
+Time: <br />
+<input id=timerange type=range min="20" value='50' max="200" style='width: 100px;' onmouseup='setTime(this.value);'>
+<input id=showtime value='50'/>
+<div id='completed' style='display:none;'>
+You Won! <br>
+Enjoy your sequencer!<br />
+<br />
+<button onclick='mirror();matrix_to_puzzle();'>Mirror</button>
+<button onclick='swap_row();matrix_to_puzzle();'>Swap</button>
+<button onclick='rotate();matrix_to_puzzle();'>Rotate</button>
+<br />
+Now you can edit any value on the grid.
+</div>
+</div>
+</body>
+</html>

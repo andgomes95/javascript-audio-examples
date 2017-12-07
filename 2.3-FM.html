@@ -1,0 +1,38 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+</head>
+<body>
+<script>
+var context = new (window.AudioContext || window.webkitAudioContext)();
+var carrier = context.createOscillator();
+var modulator = context.createOscillator();
+var modulatorGain = context.createGain();
+
+carrier.connect(context.destination);
+modulator.connect(modulatorGain);
+modulatorGain.connect(carrier.frequency);
+
+carrier.start(0);
+modulator.start(0);
+
+function play(){
+   carrier.frequency.value = parseFloat(document.getElementById('carrier').value);
+
+   modulator.frequency.value = parseFloat(document.getElementById('mod').value);
+   modulatorGain.gain.value = parseFloat(document.getElementById('mod_amp').value);
+}
+
+</script>
+Modulator<br>
+Freq<input type='text' id='mod' value='440' onchange='play()'>
+Amplitude <input type='text' id='mod_amp' value='2000' onchange='play()'>
+
+<hr>
+
+Carrier<br>
+Freq<input type='text' id='carrier' value='440' onchange='play()'>
+
+<hr>
+</body>
+</html>

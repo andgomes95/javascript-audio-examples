@@ -1,0 +1,63 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+</head>
+<body>
+<script>
+
+function play_song() {
+
+    var context = new window.webkitcontextContext(),
+        position = 0,
+        scale = {
+            e: 329.63,
+            f: 349.23,
+            g: 392,
+            a: 440,
+            b: 493.88
+        },
+        song = document.getElementById("song").value;
+
+    setInterval(play, 1000 / 4);
+
+    function createOscillator(freq) {
+        var attack = 10,
+            decay = 250,
+            gain = context.createGain(),
+            osc = context.createOscillator();
+
+        gain.connect(context.destination);
+        gain.gain.setValueAtTime(0, context.currentTime);
+        gain.gain.linearRampToValueAtTime(1, context.currentTime + attack / 1000);
+        gain.gain.linearRampToValueAtTime(0, context.currentTime + decay / 1000);
+
+        osc.frequency.value = freq;
+        osc.type = "square";
+        osc.connect(gain);
+        osc.start(0);
+
+        setTimeout(function() {
+            osc.stop(0);
+            osc.disconnect(gain);
+            gain.disconnect(context.destination);
+        }, decay)
+    }
+
+    function play() {
+        var note = song.charAt(position),
+            freq = scale[note];
+        position += 1;
+        if(position >= song.length) {
+            position = 0;
+        }
+        if(freq) {
+            createOscillator(freq);
+        }
+    }
+}
+</script>
+
+<input size='100' type=text name='song' id='song' value='gfefgg-fff-gbb-gfefggggffgfe---'>
+<button onclick='play_song()'>Play it!</button>
+</body>
+</html>

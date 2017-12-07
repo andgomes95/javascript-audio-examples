@@ -1,0 +1,67 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+</head>
+<body>
+<audio id='test'></audio>
+<button onclick="document.getElementById('test').play();" type="button">Play Sound</button>
+<button onclick="document.getElementById('test').pause();" type="button">Pause Sound</button> 
+<button onclick="loop('test');" type="button">Loop</button> 
+<br> 
+
+<canvas id="waveform" width=500 height=300  style="border:1px solid #d3d3d3;"></canvas>
+
+<script>
+
+var c = document.getElementById("waveform");
+var ctx = c.getContext("2d");
+
+ctx.beginPath();
+ctx.lineWidth = "1";
+ctx.strokeStyle = "green";  // Green path
+ctx.moveTo(0, 122);
+
+x = 0
+scale = 0
+function draw(value){
+    x++;
+    if (x % 100 == 0){
+        ctx.lineTo(scale, value);
+        scale++;
+    }
+}
+
+
+
+var freq = 1600.0;
+var track = '';
+var SR = 44100;
+for(k = SR * 10; k--;) {
+  value = Math.sin(k/SR*2*Math.PI*freq)*127+128;
+  track += String.fromCharCode(value);
+  draw(value)
+}
+
+ctx.stroke();  // Draw it
+
+player = new Audio('data:audio/wav;base64,UklGRjUrAABXQVZFZm10IBAAAAABAAEARKwAAESsAAABAAgAZGF0YREr'+btoa('\0\0'+track));
+player.play();
+
+document.getElementById('test').src = 'data:audio/wav;base64,UklGRjUrAABXQVZFZm10IBAAAAABAAEARKwAAESsAAABAAgAZGF0YREr'+btoa('\0\0'+track);
+
+function loop(elementId){
+
+	if(document.getElementById(elementId).loop)
+		document.getElementById(elementId).removeAttribute('loop');
+	else
+		document.getElementById(elementId).createAttribute('loop', 'true');
+
+}
+
+
+
+</script>
+
+
+</body>
+</html>

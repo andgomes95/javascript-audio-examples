@@ -1,0 +1,91 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+</head>
+<body>
+<script>
+
+
+WhiteNoise = function(context) {
+  var that = this;
+  this.x = 0; // Initial sample number
+  this.context = context;
+  this.node = context.createScriptProcessor(1024, 0, 2);
+  this.node.onaudioprocess = function(e) { that.process(e) };
+}
+
+WhiteNoise.prototype.process = function(e) {
+  var data_l = e.outputBuffer.getChannelData(0);
+  var data_r = e.outputBuffer.getChannelData(1);
+  for (var i = 0; i < data_l.length; ++i) {
+//    data[i] = Math.sin(this.x++);
+      data_l[i] = (Math.random() * 2) - 1;
+      data_r[i] = (Math.random() * 2) - 1;
+  }
+}
+
+WhiteNoise.prototype.play = function() {
+  this.node.connect(this.context.destination);
+}
+
+WhiteNoise.prototype.pause = function() {
+  this.node.disconnect();
+}
+
+WhiteNoise.prototype.stop = function() {
+  this.node.disconnect();
+}
+
+
+var AudioContext = window.AudioContext || window.webkitAudioContext;
+var context = new AudioContext();
+
+var filter = context.createBiquadFilter();
+filter.type = "highpass";
+
+var whiteNoise = new WhiteNoise(context);
+whiteNoise.node.connect(filter);
+filter.connect(context.destination)
+
+// Detect if the browser is IE or not.
+// If it is not IE, we assume that the browser is NS.
+var IE = document.all?true:false
+
+// If NS -- that is, !IE -- then set up for mouse capture
+if (!IE) document.captureEvents(Event.MOUSEMOVE)
+
+// Set-up to use getMouseXY function onMouseMove
+document.onmousemove = getMouseXY;
+
+// Temporary variables to hold mouse x-y pos.s
+var tempX = 0
+var tempY = 0
+
+// Main function to retrieve mouse x-y pos.s
+
+function getMouseXY(e) {
+  if (IE) { // grab the x-y pos.s if browser is IE
+    tempX = event.clientX + document.body.scrollLeft
+    tempY = event.clientY + document.body.scrollTop
+  } else {  // grab the x-y pos.s if browser is NS
+    tempX = e.pageX
+    tempY = e.pageY
+  }  
+  // catch possible negative values in NS4
+  if (tempX < 0){tempX = 0}
+  if (tempY < 0){tempY = 0}  
+  // show the position values in the form named Show
+  // in the text fields named MouseX and MouseY
+  document.getElementById('MouseX').value = tempX * 10
+
+filter.frequency.value = tempX * 10;
+  return true
+}
+
+
+</script>
+<br>
+<input type="text" id="MouseX" value="0" size="4"> X<br>
+
+</body>
+</html>

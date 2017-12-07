@@ -1,0 +1,40 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+</head>
+<body>
+<script>
+
+var real = new Float32Array(6);
+var imag = new Float32Array(6);
+var ac = new AudioContext();
+var osc = ac.createOscillator();
+
+real[0] = 0;
+imag[0] = 0;
+real[1] = 1;
+imag[1] = 0;
+real[2] = 1;
+imag[2] = 0;
+real[3] = 1;
+imag[3] = 0;
+real[4] = 1;
+imag[4] = 0;
+real[5] = 1;
+imag[5] = 0;
+
+var wave = ac.createPeriodicWave(real, imag);
+
+osc.setPeriodicWave(wave);
+
+osc.connect(ac.destination);
+
+osc.start();
+osc.stop(2); 
+
+</script>
+
+https://developer.mozilla.org/en-US/docs/Web/API/AudioContext.createPeriodicWave
+
+</body>
+</html>

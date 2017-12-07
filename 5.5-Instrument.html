@@ -1,0 +1,81 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+<script src='Drum.js'></script>
+<script>
+var context = new (window.AudioContext || window.webkitAudioContext)();
+
+var note1 = 60;
+var note2 = 72;
+var note3 = 84;
+
+var color1 = "Coral";
+var color2 = "Chocolate";
+
+function play(note, canvas){
+	var drum = new Drum(context);
+	drum.play(note);
+   color_drum(canvas, color2);
+   setTimeout(function(){color_drum(canvas, color1);}, 200);
+}
+
+
+function color_drum(canvas_name, color){
+      var canvas = document.getElementById(canvas_name);
+      var context = canvas.getContext('2d');
+      var centerX = canvas.width / 2;
+      var centerY = canvas.height / 2;
+      var radius = 50;
+      // Different size bongos!
+      if(canvas_name == "myCanvas1"){
+         radius = 70;
+      }
+      if(canvas_name == "myCanvas2"){
+         radius = 50;
+      }
+      if(canvas_name == "myCanvas3"){
+         radius = 30;
+      }
+      context.beginPath();
+      context.arc(centerX, centerY, radius + 1, 0, 2 * Math.PI, false);
+      context.fillStyle = color1;
+      context.fill();
+      context.lineWidth = 4;
+      context.strokeStyle = color1;
+      context.stroke();
+
+      context.beginPath();
+      context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+      context.fillStyle = color;
+      context.fill();
+      context.lineWidth = 1;
+      context.strokeStyle = '#F5F5F5';
+      context.stroke();
+}
+
+window.onload = function(e){
+   color_drum("myCanvas1", color1);
+   color_drum("myCanvas2", color1);
+   color_drum("myCanvas3", color1);
+}
+
+document.onkeypress = function(evt) {
+    evt = evt || window.event;
+    var charCode = evt.keyCode || evt.which;
+    var charStr = String.fromCharCode(charCode);
+    if(charStr == 'a') play(note1, "myCanvas1");
+    if(charStr == 's') play(note2, "myCanvas2");
+    if(charStr == 'd') play(note3, "myCanvas3");
+};
+
+</script>
+</head>
+<body>
+
+<canvas id="myCanvas1" width="150" height="150" onclick='play(note1, "myCanvas1")'></canvas>
+<canvas id="myCanvas2" width="120" height="120" onclick='play(note2, "myCanvas2")'></canvas>
+<canvas id="myCanvas3" width="80" height="80" onclick='play(note3, "myCanvas3")'></canvas>
+<br />
+play with 'a', 's' and 'd' keyboard keys
+</body>
+</html>

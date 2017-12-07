@@ -1,0 +1,73 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+</head>
+<body>
+<script>
+
+
+WhiteNoise = function(context) {
+  var that = this;
+  this.x = 0; // Initial sample number
+  this.context = context;
+  this.node = context.createScriptProcessor(1024, 0, 2);
+  this.node.onaudioprocess = function(e) { that.process(e) };
+}
+
+WhiteNoise.prototype.process = function(e) {
+  var data_l = e.outputBuffer.getChannelData(0);
+  var data_r = e.outputBuffer.getChannelData(1);
+  for (var i = 0; i < data_l.length; ++i) {
+//    data[i] = Math.sin(this.x++);
+      data_l[i] = (Math.random() * 2) - 1;
+      data_r[i] = (Math.random() * 2) - 1;
+  }
+}
+
+WhiteNoise.prototype.play = function() {
+  this.node.connect(this.context.destination);
+}
+
+WhiteNoise.prototype.pause = function() {
+  this.node.disconnect();
+}
+
+WhiteNoise.prototype.stop = function() {
+  this.node.disconnect();
+}
+
+
+var AudioContext = window.AudioContext || window.webkitAudioContext;
+var context = new AudioContext();
+
+var HPF = context.createBiquadFilter();
+HPF.type = "highpass";
+HPF.frequency.value = 20000;
+HPF.Q.value = 20;
+
+var LPF = context.createBiquadFilter();
+LPF.type = "lowpass";
+LPF.frequency.value = 20;
+LPF.Q.value = 20;
+
+var whiteNoise = new WhiteNoise(context);
+whiteNoise.node.connect(LPF);
+whiteNoise.node.connect(HPF);
+LPF.connect(context.destination)
+HPF.connect(context.destination)
+
+function adjustHPF(){
+    HPF.frequency.value = document.getElementById("HPF").value;
+}
+
+function adjustLPF(){
+    LPF.frequency.value = document.getElementById("LPF").value;
+}
+
+</script>
+<br>
+LPF<input type="text" id="LPF" value="20" size="4" onblur="adjustLPF();"/><br />
+HPF<input type="text" id="HPF" value="2000" size="4" onblur="adjustHPF();"/><br />
+
+</body>
+</html>

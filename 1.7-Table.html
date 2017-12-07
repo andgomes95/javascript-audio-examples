@@ -1,0 +1,131 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+<style>
+#myCanvas{
+   border: 1px solid #000;
+}
+#myArray{
+   font-size: 10pt;
+}
+</style>
+</head>
+<body>
+<canvas id="myCanvas"></canvas>
+<button onClick='toArray();'>toArray</button>
+<script>
+
+var table_size = 512;
+
+var lastPos = {
+    x: 0,
+    y: 0
+  };
+
+var points = [];
+
+for(var i = 0 ; i < table_size ; i++)
+   points[i] = 0;
+
+function draw(canvas, mousePos) {
+   var context = canvas.getContext('2d');
+
+   // paint it white
+   var x_left = (mousePos.x > lastPos.x)? (lastPos.x):(mousePos.x);
+   var x_right = (mousePos.x > lastPos.x)? (mousePos.x):(lastPos.x);
+   var y_left = (mousePos.x > lastPos.x)? (lastPos.y):(mousePos.y);
+   var y_right = (mousePos.x > lastPos.x)? (mousePos.y):(lastPos.y);
+
+   var width = x_right - x_left;
+   context.clearRect(x_left, 0, width, canvas.height);
+
+
+   // Mid blue line
+   context.beginPath();
+   context.strokeStyle = "#0000FF";
+   context.moveTo(0, canvas.height / 2);
+   context.lineTo(canvas.width, canvas.height / 2);
+   context.stroke();   
+
+
+   context.beginPath();
+   context.strokeStyle = "#000000";
+   context.moveTo(lastPos.x, lastPos.y);
+   context.lineTo(mousePos.x, mousePos.y);
+   context.stroke();   
+
+
+   for(var i = x_left; i < x_right; i++){
+      points[i] = (i - x_left) * (y_right - y_left ) / (x_right - x_left) + y_left;
+      points[i] = (((canvas.height - points[i]) / canvas.height) * 2.0 ) - 1.0;
+   }
+
+   lastPos = mousePos;
+}
+
+function getMousePos(canvas, evt) {
+  var rect = canvas.getBoundingClientRect();
+  return {
+    x: evt.clientX - rect.left,
+    y: evt.clientY - rect.top
+  };
+}
+
+var canvas = document.getElementById('myCanvas');
+canvas.width = table_size;
+canvas.height = 257;
+draw(canvas, lastPos);
+
+canvas.addEventListener('mousemove', function(evt) {
+  var mousePos = getMousePos(canvas, evt);
+  draw(canvas, mousePos);
+}, false);
+
+
+TableOscillator = function(context) {
+  var that = this;
+  this.x = 0; // Initial sample number
+  this.context = context;
+  this.node = context.createScriptProcessor(512, 0, 1);
+  this.node.onaudioprocess = function(e) { that.process(e) };
+}
+
+var lastIndex = 0;
+TableOscillator.prototype.process = function(e) {
+  var data = e.outputBuffer.getChannelData(0);
+  for (var i = 0; i < data.length; ++i) {
+      data[i] = points[lastIndex];
+      lastIndex = (lastIndex > points.length)? 0 : lastIndex + 1;
+  }
+}
+
+TableOscillator.prototype.play = function() {
+  this.node.connect(this.context.destination);
+}
+
+TableOscillator.prototype.pause = function() {
+  this.node.disconnect();
+}
+
+TableOscillator.prototype.stop = function() {
+  this.node.disconnect();
+}
+
+
+var context = new webkitAudioContext();
+var tableOscillator = new TableOscillator(context);
+tableOscillator.play();
+
+
+function toArray(){
+   document.getElementById("myArray").innerHTML = "";
+   for(i = 0 ; i < points.length ; i++){
+      document.getElementById("myArray").innerHTML += "(" + i + "," + points[i] + ")\n";
+   }
+}
+
+
+</script>
+<textarea id=myArray rows=18 cols=30></textarea>
+</body>
+</html>

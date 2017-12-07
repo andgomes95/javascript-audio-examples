@@ -1,0 +1,60 @@
+
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+</head>
+<body>
+<script>
+
+Multiplier = function(context) {
+  var that = this;
+  this.context = context;
+  this.node = context.createScriptProcessor(256, 2, 1);
+  this.node.onaudioprocess = function(e) { that.process(e) };
+}
+
+Multiplier.prototype.process = function(e) {
+  var input0 = e.inputBuffer.getChannelData(0);
+  var input1 = e.inputBuffer.getChannelData(1);
+  var output = e.outputBuffer.getChannelData(0);
+  for (var i = 0; i < input0.length; ++i) {
+      output[i] = input0[i] * input1[i];
+  }
+}
+
+Multiplier.prototype.connect = function(e) {
+    this.node.connect(e)
+}
+
+
+var AudioContext = window.AudioContext || window.webkitAudioContext;
+var context = new AudioContext();
+
+var microphone;
+var multiplier = new Multiplier(context);
+
+navigator.getUserMedia = ( navigator.getUserMedia || 
+                     navigator.webkitGetUserMedia ||
+                        navigator.mozGetUserMedia || 
+                        navigator.msGetUserMedia);
+
+function success(stream){
+    microphone = context.createMediaStreamSource(stream);
+    microphone.connect(multiplier.node, 0);
+    microphone.connect(multiplier.node, 1);
+}
+
+function failure(){
+   console.warn("Error getting audio stream from getUserMedia");
+}
+
+if (navigator.getUserMedia) {
+    navigator.getUserMedia({audio: true}, success, failure);
+};
+
+multiplier.connect(context.destination)
+
+</script>
+</body>
+</html>
+

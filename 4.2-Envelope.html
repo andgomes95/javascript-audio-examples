@@ -1,0 +1,124 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+<style>
+#myCanvas{
+   border: 1px solid #000;
+}
+#myArray{
+   font-size: 10pt;
+}
+</style>
+</head>
+<body>
+A<input type=text id='a' size=5 value='2'>
+D<input type=text id='d' size=5 value='1'>
+S<input type=text id='s' size=5 value='3'>
+R<input type=text id='r' size=5 value='5'>
+G<input type=text id='g' size=5 value='0.5'>
+<br>
+Freq<input type=text id='freq' size=5 value='440'>
+<button onclick="play();">Play</button>
+<br>
+
+<canvas id="myCanvas"></canvas>
+
+</body>
+</html>
+
+<script>
+
+function Envelope(context, a, d, s, r, g) {
+  this.node = context.createGain()
+  this.context = context;
+  this.node.gain.value = 0;
+  this.a = a / 1000.0;
+  this.d = d / 1000.0;
+  this.s = s / 1000.0;
+  this.r = r / 1000.0;
+  this.g = g;
+}
+
+Envelope.prototype.addEventToQueue = function() {
+   var time = this.context.currentTime;
+   // Zero
+   this.node.gain.linearRampToValueAtTime(0, time);
+   // Attack time
+   time += this.a;
+   this.node.gain.linearRampToValueAtTime(1, time);
+   // Decay time
+   time += this.d;
+   this.node.gain.linearRampToValueAtTime(0.5, time);
+   // Sustain time (do nothing)
+   time += this.s;
+   // Release time
+   time += this.r;
+   this.node.gain.linearRampToValueAtTime(0, time);
+};
+
+Envelope.prototype.connect = function(src) {
+  this.node.connect(src);
+};
+
+function Instrument(context){
+   this.context = context;
+   this.envelope = new Envelope(context, 2, 1, 3, 5, 0.5);
+   this.envelope.connect(context.destination);
+}
+
+Instrument.prototype.play = function(freq) {
+   this.oscillator = context.createOscillator();
+   this.oscillator.type = 'square';
+   this.oscillator.frequency.value = 440;
+   this.oscillator.noteOn(0);
+   this.oscillator.frequency.value = freq;
+   this.oscillator.connect(this.envelope.node);
+   this.envelope.addEventToQueue();
+};
+
+Instrument.prototype.adsr = function(a, d, s, r, g) {
+   this.envelope = new Envelope(this.context, a, d, s, r, g);
+   this.envelope.connect(context.destination);
+}
+
+var context = new (window.AudioContext || window.webkitAudioContext)();
+var instrument = new Instrument(context);
+
+function play(){
+   var a = parseFloat(document.getElementById('a').value);
+   var d = parseFloat(document.getElementById('d').value);
+   var s = parseFloat(document.getElementById('s').value);
+   var r = parseFloat(document.getElementById('r').value);
+   var g = parseFloat(document.getElementById('g').value);
+   var freq = parseFloat(document.getElementById('freq').value);
+   instrument.adsr(a, d, s, r, g);
+   instrument.play(freq);
+   draw(a, d, s, r, g);
+}
+
+var canvas = document.getElementById('myCanvas');
+canvas.width = 1000;
+canvas.height = 500;
+
+function draw(a, d, s, r, g){
+   var time = a + d + s + r;
+   var proportion = canvas.width / time;
+
+   var context = canvas.getContext('2d');
+
+   context.clearRect(0, 0, canvas.width, canvas.height);
+
+   context.beginPath();
+   context.strokeStyle = "#0000FF";
+   context.moveTo(0, canvas.height);
+   context.lineTo(a * proportion, 0);
+   context.lineTo((a + d) * proportion, canvas.height - canvas.height * g);
+   context.lineTo((a + d + s) * proportion, canvas.height - canvas.height * g);
+   context.lineTo((a + d + s + r) * proportion, canvas.height);
+   context.stroke();   
+   
+}
+
+</script>
+
+

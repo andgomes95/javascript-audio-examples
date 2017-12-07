@@ -1,0 +1,348 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+<style>
+#toshare{
+   border:#ccc 1px solid;
+   width: 200px;
+}
+table, td{
+   border:#ccc 1px solid;
+	margin:20px;
+   padding-left:20px;
+}
+td{
+   width: 10px;
+	padding:4px;
+	border-top: 1px solid #ffffff;
+	border-bottom:1px solid #e0e0e0;
+	border-left: 1px solid #e0e0e0;
+}
+.timeline{
+   text-align: center;
+}
+
+table td:first-child {
+	text-align: left;
+	padding-left:20px;
+	border-left: 0;
+   width: 100px;
+   background-color: #F9C263;
+}
+
+table tr:hover td:first-child {
+	background: #f2f2f2;
+	background: -webkit-gradient(linear, left top, left bottom, from(#f2f2f2), to(#f0f0f0));
+	background: -moz-linear-gradient(top,  #f2f2f2,  #f0f0f0);
+}
+
+table tr:last-child td {
+	border-bottom:0;
+}
+
+</style>
+<script src='Maraca.js'></script>
+<script src='Pong.js'></script>
+<script src='Drum.js'></script>
+<script src='Block.js'></script>
+<script src='Guitar.js'></script>
+<script>
+var instruments = 8;
+var timeline = [];
+var time = 250;
+
+function mark(line, col){
+   var element = document.getElementById(line + "." + col);
+   if(timeline[line][col] == 0){
+      element.setAttribute("style","background-color: #F00;");
+      timeline[line][col] = 1;
+   }else{
+      element.setAttribute("style","background-color: #FFF;");
+      timeline[line][col] = 0;
+   }
+}
+
+var context = new (window.AudioContext || window.webkitAudioContext)();
+
+var count = 0;
+function play(){
+   for(var i = 0 ; i < 16 ; i++){
+      document.getElementById("time" + i).setAttribute("style", "background-color: #FFFFFF");
+   }
+
+   document.getElementById("time"+count).setAttribute("style", "background-color: #FFFF00");
+
+   if(timeline[0][count] == 1){
+      var maraca = new Maraca(context);
+      maraca.play(0);
+   }
+   if(timeline[1][count] == 1){
+      var kick = new Drum(context);
+      kick.play(60);
+   }
+   if(timeline[2][count] == 1){
+      var bongo1 = new Drum(context);
+      bongo1.play(72);
+   }
+   if(timeline[3][count] == 1){
+      var bongo2 = new Drum(context);
+      bongo2.play(84);
+   }
+   if(timeline[4][count] == 1){
+      var pong1 = new Pong(context);
+      pong1.play(50);
+   }
+   if(timeline[5][count] == 1){
+      var pong2 = new Pong(context);
+      pong2.play(80);
+   }
+   if(timeline[6][count] == 1){
+      var block = new Block(context);
+      block.play(105);
+   }
+   if(timeline[7][count] == 1){
+      var guitar = new Guitar(context);
+      guitar.play(60);
+   }
+   count++;
+   count = (count > 15)?0:count;
+   setTimeout(play,time);
+}
+
+window.onload = function(e){
+   loadlocation(); //initialize timeline and time
+   play(); //com'on!
+}
+
+function setTime(value){
+   document.getElementById("showtime").value = value;
+   document.getElementById("timerange").value = value;
+   time = 250 / (value / 60);
+}
+
+function share(){
+   document.location = document.location.pathname + "?seq=" + timeline + "&time=" + time;
+}
+
+function parse(val) {
+    var result = "",
+        tmp = [];
+    location.search
+    //.replace ( "?", "" ) 
+    // this is better, there might be a question mark inside
+    .substr(1)
+        .split("&")
+        .forEach(function (item) {
+        tmp = item.split("=");
+        if (tmp[0] === val) result = decodeURIComponent(tmp[1]);
+    });
+    return result;
+}
+
+function loadlocation(){
+   //initialize timeline array
+   for(var i = 0 ; i < (instruments) ; i++)
+      timeline[i] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+   var seq = parse("seq");
+   if(seq.length == 0){
+      return;
+   }
+   seq = seq.split(",");
+   for(var i = 0 ; i < instruments ; i++){
+      for(var j = 0 ; j < 16 ; j++){
+         if(seq[16 * i + j] == 1){
+            mark(i, j);
+         }
+      }
+   }
+   seq = parse("time");
+   seq = parseInt(seq);
+   seq = 15000 / seq;
+   setTime(seq);
+
+   document.getElementById("toshare").innerHTML = document.location;
+}
+
+</script>
+</head>
+<body>
+<table>
+   <tr>
+      <td class=timeline>Instrument</td>
+      <td class=timeline id='time0'>-</td>
+      <td class=timeline id='time1'>-</td>
+      <td class=timeline id='time2'>-</td>
+      <td class=timeline id='time3'>-</td>
+      <td class=timeline id='time4'>-</td>
+      <td class=timeline id='time5'>-</td>
+      <td class=timeline id='time6'>-</td>
+      <td class=timeline id='time7'>-</td>
+      <td class=timeline id='time8'>-</td>
+      <td class=timeline id='time9'>-</td>
+      <td class=timeline id='time10'>-</td>
+      <td class=timeline id='time11'>-</td>
+      <td class=timeline id='time12'>-</td>
+      <td class=timeline id='time13'>-</td>
+      <td class=timeline id='time14'>-</td>
+      <td class=timeline id='time15'>-</td>
+   </tr>
+   <tr>
+      <td>Shake</td>
+      <td onclick='mark(0,0);'  id='0.0'>
+      <td onclick='mark(0,1);'  id='0.1'>
+      <td onclick='mark(0,2);'  id='0.2'>
+      <td onclick='mark(0,3);'  id='0.3'>
+      <td onclick='mark(0,4);'  id='0.4'>
+      <td onclick='mark(0,5);'  id='0.5'>
+      <td onclick='mark(0,6);'  id='0.6'>
+      <td onclick='mark(0,7);'  id='0.7'>
+      <td onclick='mark(0,8);'  id='0.8'>
+      <td onclick='mark(0,9);'  id='0.9'>
+      <td onclick='mark(0,10);' id='0.10'>
+      <td onclick='mark(0,11);' id='0.11'>
+      <td onclick='mark(0,12);' id='0.12'>
+      <td onclick='mark(0,13);' id='0.13'>
+      <td onclick='mark(0,14);' id='0.14'>
+      <td onclick='mark(0,15);' id='0.15'>
+   </tr>
+   <tr>
+      <td>Kick</td>
+      <td onclick='mark(1,0);' id='1.0'>
+      <td onclick='mark(1,1);' id='1.1'>
+      <td onclick='mark(1,2);' id='1.2'>
+      <td onclick='mark(1,3);' id='1.3'>
+      <td onclick='mark(1,4);' id='1.4'>
+      <td onclick='mark(1,5);' id='1.5'>
+      <td onclick='mark(1,6);' id='1.6'>
+      <td onclick='mark(1,7);' id='1.7'>
+      <td onclick='mark(1,8);'  id='1.8'>
+      <td onclick='mark(1,9);'  id='1.9'>
+      <td onclick='mark(1,10);' id='1.10'>
+      <td onclick='mark(1,11);' id='1.11'>
+      <td onclick='mark(1,12);' id='1.12'>
+      <td onclick='mark(1,13);' id='1.13'>
+      <td onclick='mark(1,14);' id='1.14'>
+      <td onclick='mark(1,15);' id='1.15'>
+   </tr>
+   <tr>
+      <td>Bongo 1</td>
+      <td onclick='mark(2,0);' id='2.0'>
+      <td onclick='mark(2,1);' id='2.1'>
+      <td onclick='mark(2,2);' id='2.2'>
+      <td onclick='mark(2,3);' id='2.3'>
+      <td onclick='mark(2,4);' id='2.4'>
+      <td onclick='mark(2,5);' id='2.5'>
+      <td onclick='mark(2,6);' id='2.6'>
+      <td onclick='mark(2,7);' id='2.7'>
+      <td onclick='mark(2,8);'  id='2.8'>
+      <td onclick='mark(2,9);'  id='2.9'>
+      <td onclick='mark(2,10);' id='2.10'>
+      <td onclick='mark(2,11);' id='2.11'>
+      <td onclick='mark(2,12);' id='2.12'>
+      <td onclick='mark(2,13);' id='2.13'>
+      <td onclick='mark(2,14);' id='2.14'>
+      <td onclick='mark(2,15);' id='2.15'>
+   </tr>
+   <tr>
+      <td>Bongo 2</td>
+      <td onclick='mark(3,0);' id='3.0'>
+      <td onclick='mark(3,1);' id='3.1'>
+      <td onclick='mark(3,2);' id='3.2'>
+      <td onclick='mark(3,3);' id='3.3'>
+      <td onclick='mark(3,4);' id='3.4'>
+      <td onclick='mark(3,5);' id='3.5'>
+      <td onclick='mark(3,6);' id='3.6'>
+      <td onclick='mark(3,7);' id='3.7'>
+      <td onclick='mark(3,8);'  id='3.8'>
+      <td onclick='mark(3,9);'  id='3.9'>
+      <td onclick='mark(3,10);' id='3.10'>
+      <td onclick='mark(3,11);' id='3.11'>
+      <td onclick='mark(3,12);' id='3.12'>
+      <td onclick='mark(3,13);' id='3.13'>
+      <td onclick='mark(3,14);' id='3.14'>
+      <td onclick='mark(3,15);' id='3.15'>
+   </tr>
+   <tr>
+      <td>Noise 1</td>
+      <td onclick='mark(4,0);' id='4.0'>
+      <td onclick='mark(4,1);' id='4.1'>
+      <td onclick='mark(4,2);' id='4.2'>
+      <td onclick='mark(4,3);' id='4.3'>
+      <td onclick='mark(4,4);' id='4.4'>
+      <td onclick='mark(4,5);' id='4.5'>
+      <td onclick='mark(4,6);' id='4.6'>
+      <td onclick='mark(4,7);' id='4.7'>
+      <td onclick='mark(4,8);'  id='4.8'>
+      <td onclick='mark(4,9);'  id='4.9'>
+      <td onclick='mark(4,10);' id='4.10'>
+      <td onclick='mark(4,11);' id='4.11'>
+      <td onclick='mark(4,12);' id='4.12'>
+      <td onclick='mark(4,13);' id='4.13'>
+      <td onclick='mark(4,14);' id='4.14'>
+      <td onclick='mark(4,15);' id='4.15'>
+   </tr>
+   <tr>
+      <td>Noise 2</td>
+      <td onclick='mark(5,0);' id='5.0'>
+      <td onclick='mark(5,1);' id='5.1'>
+      <td onclick='mark(5,2);' id='5.2'>
+      <td onclick='mark(5,3);' id='5.3'>
+      <td onclick='mark(5,4);' id='5.4'>
+      <td onclick='mark(5,5);' id='5.5'>
+      <td onclick='mark(5,6);' id='5.6'>
+      <td onclick='mark(5,7);' id='5.7'>
+      <td onclick='mark(5,8);'  id='5.8'>
+      <td onclick='mark(5,9);'  id='5.9'>
+      <td onclick='mark(5,10);' id='5.10'>
+      <td onclick='mark(5,11);' id='5.11'>
+      <td onclick='mark(5,12);' id='5.12'>
+      <td onclick='mark(5,13);' id='5.13'>
+      <td onclick='mark(5,14);' id='5.14'>
+      <td onclick='mark(5,15);' id='5.15'>
+   </tr>
+   <tr>
+      <td>Block</td>
+      <td onclick='mark(6,0);' id='6.0'>
+      <td onclick='mark(6,1);' id='6.1'>
+      <td onclick='mark(6,2);' id='6.2'>
+      <td onclick='mark(6,3);' id='6.3'>
+      <td onclick='mark(6,4);' id='6.4'>
+      <td onclick='mark(6,5);' id='6.5'>
+      <td onclick='mark(6,6);' id='6.6'>
+      <td onclick='mark(6,7);' id='6.7'>
+      <td onclick='mark(6,8);'  id='6.8'>
+      <td onclick='mark(6,9);'  id='6.9'>
+      <td onclick='mark(6,10);' id='6.10'>
+      <td onclick='mark(6,11);' id='6.11'>
+      <td onclick='mark(6,12);' id='6.12'>
+      <td onclick='mark(6,13);' id='6.13'>
+      <td onclick='mark(6,14);' id='6.14'>
+      <td onclick='mark(6,15);' id='6.15'>
+   </tr>
+   <tr>
+      <td>Guitar</td>
+      <td onclick='mark(7,0);' id='7.0'>
+      <td onclick='mark(7,1);' id='7.1'>
+      <td onclick='mark(7,2);' id='7.2'>
+      <td onclick='mark(7,3);' id='7.3'>
+      <td onclick='mark(7,4);' id='7.4'>
+      <td onclick='mark(7,5);' id='7.5'>
+      <td onclick='mark(7,6);' id='7.6'>
+      <td onclick='mark(7,7);' id='7.7'>
+      <td onclick='mark(7,8);'  id='7.8'>
+      <td onclick='mark(7,9);'  id='7.9'>
+      <td onclick='mark(7,10);' id='7.10'>
+      <td onclick='mark(7,11);' id='7.11'>
+      <td onclick='mark(7,12);' id='7.12'>
+      <td onclick='mark(7,13);' id='7.13'>
+      <td onclick='mark(7,14);' id='7.14'>
+      <td onclick='mark(7,15);' id='7.15'>
+   </tr>
+</table>
+<input id=timerange type=range min="50" value='120' max="400" onmouseup='setTime(this.value);'>
+<input id=showtime value='120'/>
+<br>
+<button onclick='share()'>Share</button>
+<p id=toshare></p>
+</body>
+</html>

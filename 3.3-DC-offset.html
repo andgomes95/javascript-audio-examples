@@ -1,0 +1,91 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+</head>
+<body>
+<script>
+
+DCOffset = function(context) {
+  var that = this;
+  this.offset = 0; // Initial sample number
+  this.context = context;
+  this.node = context.createScriptProcessor(1024, 1, 1);
+  this.node.onaudioprocess = function(e) { that.process(e) };
+}
+
+DCOffset.prototype.process = function(e) {
+  var input = e.inputBuffer.getChannelData(0);
+  var output = e.outputBuffer.getChannelData(0);
+  for (var i = 0; i < input.length; ++i) {
+      output[i] = input[i] + this.offset;
+  }
+}
+
+DCOffset.prototype.connect = function(e) {
+    this.node.connect(e)
+}
+
+
+
+WhiteNoise = function(context, src) {
+  var that = this;
+  this.x = 0; // Initial sample number
+  this.src = src;
+  this.context = context;
+  this.node = context.createScriptProcessor(1024, 0, 1);
+  this.node.onaudioprocess = function(e) { that.process(e) };
+}
+
+WhiteNoise.prototype.process = function(e) {
+  var data = e.outputBuffer.getChannelData(0);
+  for (var i = 0; i < data.length; ++i) {
+      data[i] = (Math.random() * 2) - 1;
+  }
+}
+
+WhiteNoise.prototype.play = function() {
+  this.node.connect(this.src);
+}
+
+WhiteNoise.prototype.start = function() {
+  this.node.connect(this.src);
+}
+
+WhiteNoise.prototype.pause = function() {
+  this.node.disconnect();
+}
+
+WhiteNoise.prototype.stop = function() {
+  this.node.disconnect();
+}
+
+var AudioContext = window.AudioContext || window.webkitAudioContext;
+var context = new AudioContext();
+
+var oscillator = context.createOscillator(); // Create sound source 1
+oscillator.type = 'sine'; // Sine wave
+oscillator.frequency.value = 0.5; // Default frequency in hertz
+oscillator.start(0); // Play sound source 1 instantly 
+
+var gain = context.createGain(); // Create gain node
+gain.gain.value = 220
+
+var DC = new DCOffset(context);
+DC.offset = 440;
+
+var filter = context.createBiquadFilter();
+filter.type = 'bandpass'; // Low-pass filter. See BiquadFilterNode docs
+oscillator.connect(gain); // Connect sound source 1 to output
+gain.connect(DC.node);
+DC.connect(filter.frequency); // Connect gain node 2 to output
+
+filter.connect(context.destination);
+filter.Q.value = 10;
+var whiteNoise = new WhiteNoise(context, filter);
+
+whiteNoise.start(0);
+
+
+</script>
+</body>
+</html>

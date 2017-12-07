@@ -1,0 +1,122 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+</head>
+<body>
+
+<script>
+navigator.getUserMedia = ( navigator.getUserMedia || 
+                     navigator.webkitGetUserMedia ||
+                        navigator.mozGetUserMedia || 
+                        navigator.msGetUserMedia);
+
+var context = new (window.AudioContext || window.webkitAudioContext)();
+var microphone;
+var recorder1 = new Recorder(context);
+var recorder2 = new Recorder(context);
+var recorder3 = new Recorder(context);
+
+function success(stream){
+   microphone = context.createMediaStreamSource(stream);
+//   microphone.connect(context.destination);
+   microphone.connect(recorder1.node);
+   microphone.connect(recorder2.node);
+   microphone.connect(recorder3.node);
+}
+
+function failure(){
+   console.warn("Error getting audio stream from getUserMedia");
+}
+
+if (navigator.getUserMedia) {
+    navigator.getUserMedia({audio: true}, success, failure);
+};
+
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+
+function Recorder(context){
+   this.context = context;
+   this.bufferSize = 2048;
+   this.buffer = [];
+   this.node = context.createScriptProcessor(this.bufferSize, 1, 1);
+}
+
+Recorder.prototype.rec = function(){
+   this.buffer = [];
+   var that = this;
+   this.node.connect(this.context.destination);
+   this.node.onaudioprocess = function(e){
+      var input = e.inputBuffer.getChannelData(0);
+      var output = e.outputBuffer.getChannelData(0);
+      for(var i = 0 ; i < input.length ; i++){
+         output[i] = 0; //silence output
+         that.buffer.push(input[i]);
+      }
+   }
+}
+
+Recorder.prototype.stop = function(){
+   this.node.onaudioprocess = function(e){};
+   this.node.disconnect();
+}
+
+Recorder.prototype.play = function(){
+   if(this.buffer.length < 1)
+      return;
+   var lastpos = 0;
+   var that = this;
+   this.node.connect(this.context.destination);
+   this.node.onaudioprocess = function(e){
+      var output = e.outputBuffer.getChannelData(0);
+      for(var i = 0 ; i < output.length ; i++){
+         output[i] = that.buffer[lastpos];
+         lastpos++;
+         if(lastpos >= that.buffer.length){
+            lastpos = 0;
+         }
+      }
+    }
+}
+
+Recorder.prototype.back_play = function(){
+   if(this.buffer.length < 1)
+      return;
+   var lastpos = this.buffer.length - 1;
+   var that = this;
+   this.node.connect(this.context.destination);
+   this.node.onaudioprocess = function(e){
+      var output = e.outputBuffer.getChannelData(0);
+      for(var i = 0 ; i < output.length ; i++){
+         output[i] = that.buffer[lastpos];
+         lastpos--;
+         if(lastpos <= -1 ){
+            lastpos = that.buffer.length - 1;
+         }
+      }
+    }
+}
+
+Recorder.prototype.connect = function(obj){
+   this.node.connect(obj);
+}
+
+</script>
+
+<button onclick='recorder1.rec();'>Rec</button>
+<button onclick='recorder1.play();'>Play</button>
+<button onclick='recorder1.back_play();'>Back play</button>
+<button onclick='recorder1.stop();'>Stop</button>
+<br />
+<button onclick='recorder2.rec();'>Rec</button>
+<button onclick='recorder2.play();'>Play</button>
+<button onclick='recorder2.back_play();'>Back play</button>
+<button onclick='recorder2.stop();'>Stop</button>
+<br />
+<button onclick='recorder3.rec();'>Rec</button>
+<button onclick='recorder3.play();'>Play</button>
+<button onclick='recorder3.back_play();'>Back play</button>
+<button onclick='recorder3.stop();'>Stop</button>
+<br />
+</body>
+</html>

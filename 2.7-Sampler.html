@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Cache-Control" content="no-store" />
+<script>
+
+var AudioContext = window.AudioContext || window.webkitAudioContext;
+var context = new AudioContext();
+
+var input = context.createBuffer(2, context.sampleRate * 5, context.sampleRate);
+var output = context.createBuffer(2, context.sampleRate * 5, context.sampleRate);
+var getSound = new XMLHttpRequest(); // Load the Sound with XMLHttpRequest
+
+function loadsample(){
+	getSound.open("GET", "./115536__puniho__two-barks.wav", true); // Path to Audio File
+	getSound.responseType = "arraybuffer"; // Read as Binary Data
+	getSound.onload = function() {
+		context.decodeAudioData(getSound.response, function(buffer){
+			input = buffer; // Decode the Audio Data and Store it in a Variable
+			document.getElementById('amostras').innerHTML = buffer.length;
+			document.getElementById('tempo').innerHTML = buffer.length / context.sampleRate;
+			document.getElementById('final').value = buffer.length -1;
+		});
+	}
+	getSound.send(); // Send the Request and Load the File
+}
+
+function generate(){
+	var temp0 = new Float32Array;
+	var temp1 = new Float32Array;
+	output = context.createBuffer(1, context.sampleRate * 5, context.sampleRate);
+    temp0 = input.getChannelData(0);
+    temp1 = output.getChannelData(0);
+
+	var inicial = parseInt(document.getElementById('inicial').value);
+	var final = parseInt(document.getElementById('final').value);
+	var total = parseInt(document.getElementById('total').value);
+
+	var j = inicial;
+    for (var i = 0; i < total; i++) {
+        temp1[i] = temp0[j];
+        j = (j > final) ? inicial : j + 1;
+    }
+}
+
+function playme(){
+	var playSound = context.createBufferSource();
+	generate();
+	playSound.buffer = output;
+	playSound.connect(context.destination);
+	playSound.start(0);
+}
+
+</script>
+</head>
+<body onload=loadsample()>
+Amostra inicial<input id=inicial type=text value=0 ><br>
+Amostra final<input id=final type=text value=0><br>
+Total de amostras<input id=total type=text value='44100'><br>
+
+Arquivo de <span id='amostras'>0</span> amostras ou <span id='tempo'></span> segundos<br>
+
+<input type='button' value='play' onclick='playme()' />
+
+<hr>
+Experimente:<br> 
+13000 / 30000 / 13000 <br>
+25000 / 35000 / 10000
+<hr>
+Curtis Roads - Microsound <br>
+Iannis Xenaquis <br>
+Barry Truax - Shamman Ascending <br>
+Fernando Falci - Unicamp <br>
+Murray Schafer - soundscape <br>
+
+</body>
+</html>

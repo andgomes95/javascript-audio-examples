@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+<script>
+
+var context = new AudioContext(); // Create and Initialize the Audio Context
+var electro = context.createBuffer(2, context.sampleRate * 5, context.sampleRate);
+var getSound = new XMLHttpRequest(); // Load the Sound with XMLHttpRequest
+getSound.open("GET", "./FiveColumnsLong.wav", true); // Path to Audio File
+getSound.responseType = "arraybuffer"; // Read as Binary Data
+getSound.onload = function() {
+	context.decodeAudioData(getSound.response, function(buffer){
+		electro = buffer; // Decode the Audio Data and Store it in a Variable
+	});
+}
+getSound.send(); // Send the Request and Load the File
+
+window.addEventListener("keydown",onKeyDown); // Create Event Listener for KeyDown
+
+
+function onKeyDown(e){
+	switch (e.keyCode) {
+		// X
+		case 88:
+         shootme();
+		   break;
+	}
+}
+
+function shootme(){
+	var playSound = context.createBufferSource();
+	playSound.buffer = electro;
+	playSound.connect(context.destination);
+	playSound.start(0);
+}
+</script>
+</head>
+<body>
+<button onclick='shootme()'>Pressione X </button>
+
+</body>
+</html>

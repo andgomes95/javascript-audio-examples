@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+<script>
+
+var context = new AudioContext(); // Create and Initialize the Audio Context
+var electro = context.createBuffer(2, context.sampleRate * 5, context.sampleRate);
+var interpolated = context.createBuffer(2, context.sampleRate * 5, context.sampleRate);
+var getSound = new XMLHttpRequest(); // Load the Sound with XMLHttpRequest
+
+getSound.open("GET", "./sax0571.mp3", true); // Path to Audio File
+getSound.responseType = "arraybuffer"; // Read as Binary Data
+getSound.onload = function() {
+	context.decodeAudioData(getSound.response, function(buffer){
+		electro = buffer; // Decode the Audio Data and Store it in a Variable
+	});
+}
+getSound.send(); // Send the Request and Load the File
+
+function interpolate(scale){
+	var temp0 = new Float32Array;
+	var temp1 = new Float32Array;
+	interpolated = context.createBuffer(2, context.sampleRate * 5, context.sampleRate);
+    temp0 = electro.getChannelData(0);
+    temp1 = interpolated.getChannelData(0);
+    for (var i = 0; i < electro.length / scale; i++) {
+        temp1[i] = temp0[i * scale];
+    }
+}
+
+function shootme(scale){
+	interpolate(scale);
+	var playSound = context.createBufferSource();
+	playSound.buffer = interpolated;
+	playSound.connect(context.destination);
+	playSound.start(0);
+}
+
+</script>
+</head>
+<body>
+<button onclick='shootme(0.5)'>Metade da velocidade </button>
+<button onclick='shootme(1)'>Velocidade normal</button>
+<button onclick='shootme(2)'>Velocidade x2</button>
+<button onclick='shootme(3)'>Velocidade x3</button>
+
+</body>
+</html>

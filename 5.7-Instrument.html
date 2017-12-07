@@ -1,0 +1,63 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+<script src='Maraca.js'></script>
+<style>
+.plus30{
+    -ms-transform: rotate(45deg); /* IE 9 */
+    -webkit-transform: rotate(45deg); /* Chrome, Safari, Opera */
+    transform: rotate(45deg);
+}
+.minus30{
+    -ms-transform: rotate(315deg); /* IE 9 */
+    -webkit-transform: rotate(315deg); /* Chrome, Safari, Opera */
+    transform: rotate(315deg);
+}
+.normal{
+    -ms-transform: rotate(0deg); /* IE 9 */
+    -webkit-transform: rotate(0deg); /* Chrome, Safari, Opera */
+    transform: rotate(0deg);
+}
+</style>
+</head>
+<body>
+
+<script>
+var context = new (window.AudioContext || window.webkitAudioContext)();
+
+function play(note, status){
+   var maraca = new Maraca(context);
+	maraca.play(note);
+   var caxixi = document.getElementById('caxixi');
+   if(status == 0){
+      caxixi.className = 'plus30';
+   }else{
+      caxixi.className = 'minus30';
+   }
+   setTimeout(function(){toNormal(caxixi);},300);
+}
+
+function toNormal(element){
+      caxixi.className = 'normal';
+}
+
+document.onkeypress = function(evt) {
+    evt = evt || window.event;
+    var charCode = evt.keyCode || evt.which;
+    var charStr = String.fromCharCode(charCode);
+    if(charStr == 'a') play(50, 0);
+    if(charStr == 'd') play(50, 1);
+};
+
+
+</script>
+
+Play with 'a' and 'd'
+<br>
+<br>
+<br>
+<br>
+<img id='caxixi' width='300' src='http://files.mundopercussivo.com/200011389-86b0f87ab0/Caxixi-1-2.jpg'>
+
+</body>
+</html>

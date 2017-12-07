@@ -1,0 +1,91 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+</head>
+<body>
+<script>
+
+var context = new (window.AudioContext || window.webkitAudioContext)();
+
+var oscillator = context.createOscillator();
+var gainNode = context.createGain();
+
+oscillator.connect(gainNode);
+gainNode.connect(context.destination);
+
+
+//Sine wave is type = 0
+//oscillator.type = oscillator.SQUARE;
+//Square wave is type = 1
+//Sawtooth wave is type = 2
+//Triangle wave is type = 3
+
+var freq = 440;
+oscillator.type = 'sine';
+oscillator.frequency.value = freq; // value in hertz
+oscillator.detune.value = 100; // value in cents
+oscillator.start(0);
+
+gainNode.gain.value = 0;
+
+
+function changeFreq(){
+   freq++;
+   oscillator.frequency.value = freq; // value in hertz
+   document.getElementById('freq').innerHTML = freq;
+}
+
+function setSquare(){
+    oscillator.type = "square";
+}
+
+function setSine(){
+    oscillator.type = "sine";
+}
+
+function setSaw(){
+    oscillator.type = "sawtooth";
+}
+
+function setTriangle(){
+    oscillator.type = "triangle";
+}
+
+function play(nota){
+   var time = this.context.currentTime;
+   oscillator.frequency.linearRampToValueAtTime(nota, time);    
+   this.gainNode.gain.linearRampToValueAtTime(0, time);
+   // Attack time
+   time += 0.2;
+   this.gainNode.gain.linearRampToValueAtTime(1, time);
+   // Decay time
+   time += 0.0;
+   this.gainNode.gain.linearRampToValueAtTime(0.5, time);
+   oscillator.frequency.linearRampToValueAtTime(nota * 4, time);    
+   // Sustain time (do nothing)
+   time += 0.00;
+   // Release time
+   time += 0.30;
+   this.gainNode.gain.linearRampToValueAtTime(0, time);
+ }
+</script>
+
+<button onclick='setSine();'> Sine</button>
+<button onclick='setSquare();'> Square</button>
+<button onclick='setSaw();'> Sawtooth</button>
+<button onclick='setTriangle();'> Triangle</button>
+<br />
+
+<button onclick='changeFreq();'>
+<div id='freq'>440</div>
+</button>
+
+<br />
+
+<button onclick='play(110);'>Play 110</button>
+<button onclick='play(220);'>Play 220</button>
+<button onclick='play(330);'>Play 330</button>
+<button onclick='play(440);'>Play 440</button>
+
+</body>
+</html>

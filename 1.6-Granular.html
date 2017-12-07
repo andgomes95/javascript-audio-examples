@@ -1,0 +1,83 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+</head>
+<body onload=loadsample()>
+<script>
+
+var context = new AudioContext(); // Create and Initialize the Audio Context
+var input = context.createBuffer(2, context.sampleRate * 5, context.sampleRate);
+var getSound = new XMLHttpRequest(); // Load the Sound with XMLHttpRequest
+
+function loadsample(){
+    getSound.open("GET", "./115536__puniho__two-barks.wav", true); // Path to Audio File
+    getSound.responseType = "arraybuffer"; // Read as Binary Data
+    getSound.onload = function() {
+        context.decodeAudioData(getSound.response, function(buffer){
+            input = buffer; // Decode the Audio Data and Store it in a Variable
+            document.getElementById('amostras').innerHTML = buffer.length;
+            document.getElementById('tempo').innerHTML = buffer.length / context.sampleRate;
+            document.getElementById('final').max = buffer.length -1;
+            document.getElementById('inicial').max = buffer.length;
+        });
+    }
+    getSound.send(); // Send the Request and Load the File
+}
+
+
+Granular = function(context) {
+  var that = this;
+  this.x = 0; // Initial sample number
+  this.context = context;
+  this.node = context.createScriptProcessor(1024, 0, 2);
+  this.node.onaudioprocess = function(e) { that.process(e) };
+}
+
+var j = 0;
+
+Granular.prototype.process = function(e) {
+    var data_l = e.outputBuffer.getChannelData(0);
+    var data_r = e.outputBuffer.getChannelData(1);
+    var temp0 = new Float32Array;
+    temp0 = input.getChannelData(0);
+
+    var inicial = parseInt(document.getElementById('inicial').value);
+    var final = parseInt(document.getElementById('final').value);
+    document.getElementById('tempofinal').innerHTML = final;
+    document.getElementById('tempoinicial').innerHTML = inicial;
+
+    if (inicial > final)
+        document.getElementById('final').value = inicial + 50;
+
+    for (var i = 0; i < data_l.length; i++) {
+        data_l[i] = temp0[j];
+        data_r[i] = temp0[j];
+        j = (j > final) ? inicial : j + 1;
+    }
+}
+
+Granular.prototype.play = function() {
+  this.node.connect(this.context.destination);
+}
+
+Granular.prototype.pause = function() {
+  this.node.disconnect();
+}
+
+Granular.prototype.stop = function() {
+  this.node.disconnect();
+}
+
+
+var granular = new Granular(context);
+granular.play();
+
+</script>
+Amostra inicial<br>
+<input id=inicial type=range min="0" value='0' max="200" style='width: 1000px;'><span id='tempoinicial'>0</span><br>
+Amostra final<br>
+<input id=final type=range min="0" value='50' max="200" style='width: 1000px;'> <span id='tempofinal'>50</span><br>
+<br>
+Arquivo de <span id='amostras'>0</span> amostras ou <span id='tempo'></span> segundos<br>
+</body>
+</html>

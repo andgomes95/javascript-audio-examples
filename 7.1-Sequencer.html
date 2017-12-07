@@ -1,0 +1,196 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+<style>
+table, td{
+   border: 1px solid;
+}
+td{
+   width: 100px;
+   
+}
+.timeline{
+   text-align: center;
+}
+</style>
+<script src='Maraca.js'></script>
+<script src='Pong.js'></script>
+<script src='Drum.js'></script>
+<script src='Block.js'></script>
+<script src='Guitar.js'></script>
+<script>
+var instruments = 8;
+
+var timeline = [];
+for(var i = 0 ; i < (instruments) ; i++)
+   timeline[i] = [0, 0, 0, 0, 0, 0, 0, 0];
+
+var time = 250;
+function mark(line, col){
+   var element = document.getElementById(line + "." + col);
+   if(timeline[line][col] == 0){
+      element.setAttribute("style","background-color: #F00;");
+      timeline[line][col] = 1;
+   }else{
+      element.setAttribute("style","background-color: #FFF;");
+      timeline[line][col] = 0;
+   }
+}
+
+var context = new (window.AudioContext || window.webkitAudioContext)();
+
+var count = 0;
+function play(){
+   for(var i = 0 ; i < 8 ; i++){
+      document.getElementById("time" + i).setAttribute("style", "background-color: #FFFFFF");
+   }
+
+   document.getElementById("time"+count).setAttribute("style", "background-color: #FFFF00");
+   var maraca = new Maraca(context);
+   var kick = new Drum(context);
+   var bongo1 = new Drum(context);
+   var bongo2 = new Drum(context);
+   var pong1 = new Pong(context);
+   var pong2 = new Pong(context);
+   var block = new Block(context);
+   var guitar = new Guitar(context);
+
+   if(timeline[0][count] == 1)
+      maraca.play(0);
+   if(timeline[1][count] == 1)
+      kick.play(60);
+   if(timeline[2][count] == 1)
+      bongo1.play(72);
+   if(timeline[3][count] == 1)
+      bongo2.play(84);
+   if(timeline[4][count] == 1)
+      pong1.play(50);
+   if(timeline[5][count] == 1)
+      pong2.play(80);
+   if(timeline[6][count] == 1)
+      block.play(105);
+   if(timeline[7][count] == 1)
+      guitar.play(60);
+
+   count++;
+   count = (count > 7)?0:count;
+   setTimeout(play,time);
+}
+
+window.onload = function(e){
+   play();
+}
+
+function setTime(value){
+   document.getElementById("showtime").value = value;
+   time = 1000 / (value / 60);
+   console.log(time);
+}
+</script>
+</head>
+<body>
+<table>
+   <tr>
+      <td class=timeline>-</td>
+      <td class=timeline id='time0'>-</td>
+      <td class=timeline id='time1'>-</td>
+      <td class=timeline id='time2'>-</td>
+      <td class=timeline id='time3'>-</td>
+      <td class=timeline id='time4'>-</td>
+      <td class=timeline id='time5'>-</td>
+      <td class=timeline id='time6'>-</td>
+      <td class=timeline id='time7'>-</td>
+   </tr>
+   <tr>
+      <td>Shake</td>
+      <td onclick='mark(0,0);' id='0.0'>
+      <td onclick='mark(0,1);' id='0.1'>
+      <td onclick='mark(0,2);' id='0.2'>
+      <td onclick='mark(0,3);' id='0.3'>
+      <td onclick='mark(0,4);' id='0.4'>
+      <td onclick='mark(0,5);' id='0.5'>
+      <td onclick='mark(0,6);' id='0.6'>
+      <td onclick='mark(0,7);' id='0.7'>
+   </tr>
+   <tr>
+      <td>Kick</td>
+      <td onclick='mark(1,0);' id='1.0'>
+      <td onclick='mark(1,1);' id='1.1'>
+      <td onclick='mark(1,2);' id='1.2'>
+      <td onclick='mark(1,3);' id='1.3'>
+      <td onclick='mark(1,4);' id='1.4'>
+      <td onclick='mark(1,5);' id='1.5'>
+      <td onclick='mark(1,6);' id='1.6'>
+      <td onclick='mark(1,7);' id='1.7'>
+   </tr>
+   <tr>
+      <td>Bongo 1</td>
+      <td onclick='mark(2,0);' id='2.0'>
+      <td onclick='mark(2,1);' id='2.1'>
+      <td onclick='mark(2,2);' id='2.2'>
+      <td onclick='mark(2,3);' id='2.3'>
+      <td onclick='mark(2,4);' id='2.4'>
+      <td onclick='mark(2,5);' id='2.5'>
+      <td onclick='mark(2,6);' id='2.6'>
+      <td onclick='mark(2,7);' id='2.7'>
+   </tr>
+   <tr>
+      <td>Bongo 2</td>
+      <td onclick='mark(3,0);' id='3.0'>
+      <td onclick='mark(3,1);' id='3.1'>
+      <td onclick='mark(3,2);' id='3.2'>
+      <td onclick='mark(3,3);' id='3.3'>
+      <td onclick='mark(3,4);' id='3.4'>
+      <td onclick='mark(3,5);' id='3.5'>
+      <td onclick='mark(3,6);' id='3.6'>
+      <td onclick='mark(3,7);' id='3.7'>
+   </tr>
+   <tr>
+      <td>Noise 1</td>
+      <td onclick='mark(4,0);' id='4.0'>
+      <td onclick='mark(4,1);' id='4.1'>
+      <td onclick='mark(4,2);' id='4.2'>
+      <td onclick='mark(4,3);' id='4.3'>
+      <td onclick='mark(4,4);' id='4.4'>
+      <td onclick='mark(4,5);' id='4.5'>
+      <td onclick='mark(4,6);' id='4.6'>
+      <td onclick='mark(4,7);' id='4.7'>
+   </tr>
+   <tr>
+      <td>Noise 2</td>
+      <td onclick='mark(5,0);' id='5.0'>
+      <td onclick='mark(5,1);' id='5.1'>
+      <td onclick='mark(5,2);' id='5.2'>
+      <td onclick='mark(5,3);' id='5.3'>
+      <td onclick='mark(5,4);' id='5.4'>
+      <td onclick='mark(5,5);' id='5.5'>
+      <td onclick='mark(5,6);' id='5.6'>
+      <td onclick='mark(5,7);' id='5.7'>
+   </tr>
+   <tr>
+      <td>Block</td>
+      <td onclick='mark(6,0);' id='6.0'>
+      <td onclick='mark(6,1);' id='6.1'>
+      <td onclick='mark(6,2);' id='6.2'>
+      <td onclick='mark(6,3);' id='6.3'>
+      <td onclick='mark(6,4);' id='6.4'>
+      <td onclick='mark(6,5);' id='6.5'>
+      <td onclick='mark(6,6);' id='6.6'>
+      <td onclick='mark(6,7);' id='6.7'>
+   </tr>
+   <tr>
+      <td>Guitar</td>
+      <td onclick='mark(7,0);' id='7.0'>
+      <td onclick='mark(7,1);' id='7.1'>
+      <td onclick='mark(7,2);' id='7.2'>
+      <td onclick='mark(7,3);' id='7.3'>
+      <td onclick='mark(7,4);' id='7.4'>
+      <td onclick='mark(7,5);' id='7.5'>
+      <td onclick='mark(7,6);' id='7.6'>
+      <td onclick='mark(7,7);' id='7.7'>
+   </tr>
+</table>
+<input type=range min="50" value='120' max="400" onmouseup='setTime(this.value);'>
+<input id=showtime value='120'/>
+</body>
+</html>

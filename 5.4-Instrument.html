@@ -1,0 +1,138 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+<script src='Guitar.js'></script>
+</head>
+<body>
+
+<svg width="300" height="200" id="neck">
+    <rect x=0 y=0 width="300" id="rect" height="120" fill="rgb(99,99,99)" stroke="gray" />
+</svg>
+
+<script>
+var neck = document.getElementById("neck");
+
+//fretboard
+for(var i = 0 ; i < 5 ; i++){
+   var fret = document.createElementNS('http://www.w3.org/2000/svg', "line");
+   fret.setAttribute("x1", 50 + i * 50);
+   fret.setAttribute("x2", 50 + i * 50);
+   fret.setAttribute("y1", 0);
+   fret.setAttribute("y2", 120);
+   fret.setAttribute("stroke", "gray");
+   fret.setAttribute("stroke-width", 1);
+   neck.appendChild(fret);
+}
+
+// strings
+var notes = [64,59,55,50,45,40];
+for(var i = 0 ; i < 6 ; i++){
+   var string = document.createElementNS('http://www.w3.org/2000/svg', "line");
+   string.setAttribute("x1", 0);
+   string.setAttribute("x2", 300);
+   string.setAttribute("y1", i * 20 + 10);
+   string.setAttribute("y2", i * 20 + 10);
+   string.setAttribute("stroke", "black");
+   string.setAttribute("stroke-width", 2+i*0.2);
+   string.setAttribute("id", i);
+   string.setAttribute("note", notes[i]);
+   string.setAttribute("finger", 0);
+   string.addEventListener('mouseover', play_string);
+   string.addEventListener('click', finger_string);
+   neck.appendChild(string);
+}
+
+var context = new (window.AudioContext || window.webkitAudioContext)();
+
+function play_string(event){
+   var element = event.target;
+   element.setAttribute("stroke", "red");
+   setTimeout(function(){stop_string(element);}, 100);
+   var guitar = new Guitar(context);
+   guitar.play(parseInt(element.getAttribute("note")) + parseInt(element.getAttribute("finger")));
+}
+
+function stop_string(string){
+   string.setAttribute("stroke", "black");
+}
+
+function finger_string(event){
+   var element = event.target;
+   if (!event) var event = window.event;
+   var x = event.clientX;
+   x = x - ((x - 10)%50) - 10;
+   console.log(x);
+   finger_draw(element, x);
+}
+
+function finger_draw(string, x){
+   var y = string.getAttribute("y1");
+   var finger_id = "finger" + string.getAttribute("id");
+   if(string.getAttribute("finger") && document.getElementById(finger_id))
+      neck.removeChild(document.getElementById(finger_id));
+   var finger = document.createElementNS('http://www.w3.org/2000/svg', "circle");
+   finger.setAttribute("cx",x + 25);
+   finger.setAttribute("cy",y);
+   finger.setAttribute("r", 10);
+   finger.setAttribute("fill","black");
+   finger.setAttribute("id","finger" + string.getAttribute("id"));
+   finger.setAttribute("string",string.getAttribute("id"));
+   finger.addEventListener('click', finger_click);
+   neck.appendChild(finger);
+   string.setAttribute("finger", x/50 + 1);
+}
+
+function finger_erase(string){
+   if(! document.getElementById("finger"+string.getAttribute("id")))
+      return; // No finger in this string
+   string.setAttribute("finger", 0);
+   neck.removeChild(document.getElementById("finger"+string.getAttribute("id")));
+}
+
+function finger_click(event){
+   var element = event.target;
+   var string = document.getElementById(element.getAttribute("string"));
+   finger_erase(string);
+}
+
+function playChord(chord){
+   for(var i = 0 ; i < 6 ; i++)
+      finger_erase(document.getElementById('' + i));
+   switch(chord){
+      case 'A':{
+         finger_draw(document.getElementById("1"),50);
+         finger_draw(document.getElementById("2"),50);
+         finger_draw(document.getElementById("3"),50);
+         return;
+      }
+      case 'G':{
+         finger_draw(document.getElementById("0"),100);
+         finger_draw(document.getElementById("1"),100);
+         finger_draw(document.getElementById("4"),50);
+         finger_draw(document.getElementById("5"),100);
+         return;
+      }
+      case 'D':{
+         finger_draw(document.getElementById("0"),50);
+         finger_draw(document.getElementById("1"),100);
+         finger_draw(document.getElementById("2"),50);
+         return;
+      }
+      case 'Am':{
+         finger_draw(document.getElementById("1"),0);
+         finger_draw(document.getElementById("2"),50);
+         finger_draw(document.getElementById("3"),50);
+      }
+   }
+}
+</script>
+<br /> 
+<input type='button' onclick='playChord("A");' name='A' value='A' />
+<input type='button' onclick='playChord("G");' name='G' value='G' />
+<input type='button' onclick='playChord("D");' name='D' value='D' />
+
+<br />
+<input type='button' onclick='playChord("Am");' name='Am' value='Am' />
+<hr>
+</body>
+</html>

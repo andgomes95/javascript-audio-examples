@@ -1,0 +1,61 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+<script>
+var context = new (window.AudioContext || window.webkitAudioContext)();
+
+var electro0 = context.createBuffer(2, context.sampleRate * 5, context.sampleRate * 5);
+var getSound0 = new XMLHttpRequest(); // Load the Sound with XMLHttpRequest
+var electro1 = context.createBuffer(2, context.sampleRate * 5, context.sampleRate * 5);
+var getSound1 = new XMLHttpRequest(); // Load the Sound with XMLHttpRequest
+
+getSound0.open("GET", "./115536__puniho__two-barks.wav", true); // Path to Audio File
+getSound0.responseType = "arraybuffer"; // Read as Binary Data
+getSound0.onload = function() {
+	context.decodeAudioData(getSound0.response, function(buffer){
+		electro0 = buffer; // Decode the Audio Data and Store it in a Variable
+	});
+}
+getSound0.send(); // Send the Request and Load the File
+
+getSound1.open("GET", "./115537__puniho__fergus-sniff.wav", true); // Path to Audio File
+getSound1.responseType = "arraybuffer"; // Read as Binary Data
+getSound1.onload = function() {
+	context.decodeAudioData(getSound1.response, function(buffer){
+		electro1 = buffer; // Decode the Audio Data and Store it in a Variable
+	});
+}
+getSound1.send(); // Send the Request and Load the File
+
+
+function shootme(buffer){
+	var playSound = context.createBufferSource();
+	playSound.buffer = buffer;
+	playSound.connect(context.destination);
+	playSound.start(0);
+}
+
+var timeline0 = [1,0,1,0];
+var timeline1 = [1,1,0,0];
+var time = 1000;
+
+var count = 0;
+function play(){
+   if(timeline0[count] == 1)
+      shootme(electro0);
+   if(timeline1[count] == 1)
+      shootme(electro1);
+      
+   setTimeout(play,time);
+   count = (count == timeline.length - 1)?0:count + 1;
+}
+
+window.onload = function(e){
+   play(); //com'on!
+}
+
+</script>
+</head>
+<body>
+</body>
+</html>

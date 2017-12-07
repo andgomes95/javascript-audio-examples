@@ -1,0 +1,75 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+</head>
+<body>
+
+Exemplo original: https://developer.mozilla.org/en-US/docs/Web/API/AudioNode/connect(AudioParam)
+
+<script>
+var AudioContext = window.AudioContext || window.webkitAudioContext;
+
+var audioCtx = new AudioContext();
+
+var lfo = audioCtx.createOscillator();
+var depth = audioCtx.createGain();
+var oscillator = audioCtx.createOscillator();
+var gain = audioCtx.createGain();
+
+lfo.frequency.value = 2.0; // 2Hz: two oscillations par second
+lfo.connect(depth);
+lfo.start();
+
+depth.gain.value = 2;
+depth.connect(gain.gain);
+
+oscillator.start();
+oscillator.connect(gain);
+
+gain.gain.value = -1.0;
+gain.connect(audioCtx.destination);
+
+
+function setSquare(){
+    lfo.type = "square";
+}
+
+function setSine(){
+    lfo.type = "sine";
+}
+
+function setSaw(){
+    lfo.type = "sawtooth";
+}
+
+function setTriangle(){
+    lfo.type = "triangle";
+}
+
+function changeFreq(){
+   var freq = document.getElementById("freq").value;
+   lfo.frequency.value = freq;
+}
+
+function stop(){
+   oscillator.stop();
+}
+</script>
+
+<br>
+<button onclick='setSine();'> Sine</button>
+<button onclick='setSquare();'> Square</button>
+<button onclick='setSaw();'> Sawtooth</button>
+<button onclick='setTriangle();'> Triangle</button>
+<br />
+
+Frequencia: <input onblur='changeFreq();' id='freq' value='2.0'><br>
+
+
+<button onclick='stop();'> Stop</button>
+
+</body>
+
+
+
+</html>

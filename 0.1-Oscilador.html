@@ -1,0 +1,84 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+</head>
+<body>
+<script>
+var context = new (window.AudioContext || window.webkitAudioContext)();
+
+var oscillator = context.createOscillator();
+var oscillator2 = context.createOscillator();
+var gainNode = context.createGain();
+
+oscillator.connect(gainNode);
+oscillator2.connect(gainNode);
+gainNode.connect(context.destination);
+
+var ganho = 1;
+gainNode.gain.value = ganho;
+
+//Sine wave is type = 0
+//oscillator.type = oscillator.SQUARE;
+//Square wave is type = 1
+//Sawtooth wave is type = 2
+//Triangle wave is type = 3
+
+var freq2  = 2;
+var freq = 440;
+oscillator.type = oscillator.SQUARE;
+oscillator.frequency.value = freq; // value in hertz
+oscillator.detune.value = 100; // value in cents
+oscillator.start(0);
+
+oscillator2.type = oscillator.SQUARE;
+oscillator2.frequency.value = freq * freq2; // value in hertz
+oscillator2.detune.value = 100; // value in cents
+oscillator2.start(0);
+
+function teste(){
+	freq++;
+	oscillator.frequency.value = freq; // value in hertz
+	oscillator2.frequency.value = freq * freq2; // value in hertz
+	document.getElementById('meubotao').innerHTML = freq;
+}
+
+var esta_tocando = 1;
+function stop(){
+	if(esta_tocando == 1){
+		oscillator.stop(0);
+		oscillator2.stop(0);
+		document.getElementById('play').innerHTML = "play";
+		esta_tocando = 0;
+	}else{
+		oscillator.start(0);
+		oscillator2.start(0); 	
+		document.getElementById('play').innerHTML = "stop";
+		esta_tocando = 1;
+	}
+}
+
+function volume(){
+	ganho = parseFloat(document.getElementById('ganho').value);
+	if(ganho < 0) ganho = 0
+	else if(ganho > 1) ganho = 1;
+	gainNode.gain.value = ganho;
+	document.getElementById('ganho').value = ganho;
+}
+function change_osc2(){
+ 	freq2 = parseFloat(document.getElementById('second').value);
+	oscillator2.frequency.value = freq * freq2; // value in hertz
+   document.getElementById('second').value = freq2;
+}
+</script>
+
+Freq:<button onclick='teste()' id=meubotao>440</button><br>
+
+Gain:<input type=text id='ganho' onblur='volume();' value='1'><br>
+
+Second oscillator (* first):<input type=text id=second value=2 onblur=change_osc2();>
+<br>
+
+<button onclick='stop()' id=play>stop</button>
+
+</body>
+</html>

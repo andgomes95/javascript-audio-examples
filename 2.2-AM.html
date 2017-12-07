@@ -1,0 +1,28 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+</head>
+<body>
+<script>
+var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+
+var modulatorGain = audioCtx.createGain();
+modulatorGain.gain.value = 1;
+modulatorGain.connect(audioCtx.destination);
+
+var carrier = audioCtx.createOscillator();
+carrier.type = 'sine';
+carrier.frequency.value = 440;
+carrier.connect(modulatorGain);
+carrier.start(0);
+
+var modulator = audioCtx.createOscillator();
+modulator.frequency.value = 1000;
+modulator.connect(modulatorGain.gain);
+modulator.start(0);
+
+
+</script>
+</body>
+</html>

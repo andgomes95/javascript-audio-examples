@@ -1,0 +1,33 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+</head>
+<body>
+
+<script>
+navigator.getUserMedia = ( navigator.getUserMedia    || navigator.webkitGetUserMedia ||
+                       navigator.mozGetUserMedia ||navigator.msGetUserMedia);
+var context = new (window.AudioContext || window.webkitAudioContext)();
+var gain;
+var microphone;
+
+function success(stream){
+   microphone = context.createMediaStreamSource(stream);
+   gain = context.createGain();
+   gain.gain.value = 20;
+   microphone.connect(gain);
+   gain.connect(context.destination);
+}
+
+function failure(){
+   console.warn("Error getting audio stream from getUserMedia");
+}
+
+if (navigator.getUserMedia) {
+    navigator.getUserMedia({audio: true}, success, failure);
+};
+
+</script>
+
+</body>
+</html>

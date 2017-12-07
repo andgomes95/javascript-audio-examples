@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+<script>
+
+var context = new AudioContext(); // Create and Initialize the Audio Context
+var electro = context.createBuffer(2, context.sampleRate * 5, context.sampleRate);
+var interpolated = context.createBuffer(2, context.sampleRate * 5, context.sampleRate);
+var getSound = new XMLHttpRequest(); // Load the Sound with XMLHttpRequest
+
+getSound.open("GET", "./sax0571.mp3", true); // Path to Audio File
+getSound.responseType = "arraybuffer"; // Read as Binary Data
+getSound.onload = function() {
+	context.decodeAudioData(getSound.response, function(buffer){
+		electro = buffer; // Decode the Audio Data and Store it in a Variable
+	});
+}
+getSound.send(); // Send the Request and Load the File
+
+function interpolate(scale){
+	var temp0 = new Float32Array;
+	var temp1 = new Float32Array;
+	interpolated = context.createBuffer(1, context.sampleRate * 5, context.sampleRate);
+    temp0 = electro.getChannelData(0);
+    temp1 = interpolated.getChannelData(0);
+    //truncamento
+//    for (var i = 0; i < electro.length / scale; i++) {
+//        temp1[i] = temp0[i * scale];
+//    }
+
+    var step = Math.pow(1.059463094, scale);
+	var position = 0;
+
+	//interpolação linear
+    for (var i = 0; position < electro.length; i++) {
+		var x1 = Math.floor(position) - 1;
+		var x2 = x1;
+        temp1[i] = (x1 - position - 1) * temp0[x2] + (x2 - position - 1) * temp0[x1];
+        position += step ;
+    }
+}
+
+function sax(scale){
+	interpolate(scale);
+	var playSound = context.createBufferSource();
+	playSound.buffer = interpolated;
+	playSound.connect(context.destination);
+	playSound.start(0);
+}
+
+window.addEventListener("keypress",onKeyDown); // Create Event Listener for KeyDown
+
+
+function onKeyDown(e){
+	switch (String.fromCharCode(e.charCode)) {
+		case 'a': sax(0); break;
+		case 'w': sax(1); break;
+		case 's': sax(2); break;
+		case 'd': sax(3); break;
+		case 'r': sax(4); break;
+		case 'f': sax(5); break;
+		case 't': sax(6); break;
+		case 'g': sax(7); break;
+		case 'h': sax(8); break;
+		case 'u': sax(9); break;
+		case 'j': sax(10); break;
+		case 'i': sax(11); break;
+		case 'k': sax(12); break;
+	}
+	console.log(String.fromCharCode(e.charCode));
+}
+
+</script>
+</head>
+<body>
+<button onclick='sax(0)'>A</button>
+<button onclick='sax(1)'>A#</button>
+<button onclick='sax(2)'>B</button>
+<button onclick='sax(3)'>C</button>
+<button onclick='sax(4)'>C#</button>
+<button onclick='sax(5)'>D</button>
+<button onclick='sax(6)'>D#</button>
+<button onclick='sax(7)'>E</button>
+<button onclick='sax(8)'>F</button>
+<button onclick='sax(9)'>F#</button>
+<button onclick='sax(10)'>G</button>
+<button onclick='sax(11)'>G#</button>
+<button onclick='sax(12)'>A</button>
+</body>
+</html>

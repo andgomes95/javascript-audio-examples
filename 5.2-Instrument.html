@@ -1,0 +1,215 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+<style>
+#myCanvas{
+   border: 1px solid #000;
+}
+#myArray{
+   font-size: 10pt;
+}
+</style>
+</head>
+<body>
+Modulator<br>
+<!--<select id='mod_type'>-->
+<!--      <option value='sine'>Sine</option>-->
+<!--      <option value='square'>Square</option>-->
+<!--      <option value='sawtooth'>Sawtooth</option>-->
+<!--      <option value='triangle'>Triangle</option>-->
+<!--   </select>-->
+Freq<input type='text' id='mod' value='1'> (* times Carrier)
+Amplitude <input type='text' id='mod_amp' value='2000'>
+
+<hr>
+
+Carrier<br>
+<!--<select id='car_type'>-->
+<!--      <option value='sine'>Sine</option>-->
+<!--      <option value='square'>Square</option>-->
+<!--      <option value='sawtooth'>Sawtooth</option>-->
+<!--      <option value='triangle'>Triangle</option>-->
+<!--   </select>-->
+<!--Freq<input type='text' id='carrier' value='440'>-->
+<hr>
+A<input type=text id='a' size=5 value='2'>
+D<input type=text id='d' size=5 value='1'>
+S<input type=text id='s' size=5 value='3'>
+R<input type=text id='r' size=5 value='5'>
+G<input type=text id='g' size=5 value='0.5'>
+<br>
+
+<canvas id="myCanvas"></canvas>
+
+<hr>
+
+<button onclick="play(60);">C</button>
+<button onclick="play(61);">C#</button>
+<button onclick="play(62);">D</button>
+<button onclick="play(63);">D#</button>
+<button onclick="play(64);">E</button>
+<button onclick="play(65);">F</button>
+<button onclick="play(66);">F#</button>
+<button onclick="play(67);">G</button>
+<button onclick="play(68);">G#</button>
+<button onclick="play(69);">A</button>
+<button onclick="play(70);">A#</button>
+<button onclick="play(71);">B</button>
+
+</body>
+</html>
+
+<script>
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+var context = new (window.AudioContext || window.webkitAudioContext)();
+var canvas = document.getElementById('myCanvas');
+canvas.width = 500;
+canvas.height = 200;
+
+var midi = [];
+for (var i = 0; i < 127; i++){
+   var arg = ((parseFloat(i) - 69.0)/12.0);
+   midi[i] = Math.pow(2.0, arg) * 440.0;
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+function Envelope(context, a, d, s, r, g) {
+  this.node = context.createGain()
+  this.context = context;
+  this.node.gain.value = 0;
+  this.a = a / 1000.0;
+  this.d = d / 1000.0;
+  this.s = s / 1000.0;
+  this.r = r / 1000.0;
+  this.g = g;
+}
+
+Envelope.prototype.play = function(obj) {
+   var time = this.context.currentTime;
+   // Zero
+   this.node.gain.linearRampToValueAtTime(0, time);
+   // Attack time
+   time += this.a;
+   this.node.gain.linearRampToValueAtTime(1, time);
+   // Decay time
+   time += this.d;
+   this.node.gain.linearRampToValueAtTime(0.5, time);
+   // Sustain time (do nothing)
+   time += this.s;
+   // Release time
+   time += this.r;
+   this.node.gain.linearRampToValueAtTime(0, time);
+   var note_time = this.a + this.d + this.s + this.r;
+   note_time *= 1000.0;
+   setTimeout(function(){obj.stop()}, note_time);
+};
+
+Envelope.prototype.connect = function(src) {
+  this.node.connect(src);
+};
+
+Envelope.prototype.disconnect = function() {
+  this.node.disconnect();
+};
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+function Instrument(context){
+   this.context = context;
+   this.envelope = new Envelope(context, 2, 1, 3, 5, 0.5);
+}
+
+Instrument.prototype.play = function(carrier, modulator, modulator_gain) {
+   this.carrier = this.context.createOscillator();
+   this.modulator = this.context.createOscillator();
+   this.modulatorGain = this.context.createGain();
+
+   this.carrier.frequency.value = carrier;
+   this.modulator.frequency.value = (carrier * modulator);
+   this.modulatorGain.gain.value = modulator_gain;
+
+   this.carrier.connect(this.envelope.node);
+   this.modulator.connect(this.modulatorGain);
+   this.modulatorGain.connect(this.carrier.frequency);
+   this.envelope.connect(this.context.destination);
+
+   this.carrier.start(0);
+   this.modulator.start(0);
+   this.envelope.play(this);
+};
+
+Instrument.prototype.adsr = function(a, d, s, r, g) {
+   this.envelope = new Envelope(this.context, a, d, s, r, g);
+}
+
+Instrument.prototype.stop = function(){
+   this.carrier.stop(0);
+   this.modulator.stop(0);
+   this.carrier.disconnect();
+   this.modulator.disconnect();
+   this.envelope.disconnect();
+};
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+function play(midi_note){
+   var a = parseFloat(document.getElementById('a').value);
+   var d = parseFloat(document.getElementById('d').value);
+   var s = parseFloat(document.getElementById('s').value);
+   var r = parseFloat(document.getElementById('r').value);
+   var g = parseFloat(document.getElementById('g').value);
+//   var carrier = parseFloat(document.getElementById('carrier').value);
+   var modulator = parseFloat(document.getElementById('mod').value);
+   var modulator_gain = parseFloat(document.getElementById('mod_amp').value);
+
+   var instrument = new Instrument(context);
+   instrument.adsr(a, d, s, r, g);
+   instrument.play(midi[midi_note], modulator, modulator_gain);
+   draw(a, d, s, r, g);
+}
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+function draw(a, d, s, r, g){
+   var time = a + d + s + r;
+   var proportion = canvas.width / time;
+
+   var context = canvas.getContext('2d');
+
+   context.clearRect(0, 0, canvas.width, canvas.height);
+
+   context.beginPath();
+   context.strokeStyle = "#0000FF";
+   context.moveTo(0, canvas.height);
+   context.lineTo(a * proportion, 0);
+   context.lineTo((a + d) * proportion, canvas.height - canvas.height * g);
+   context.lineTo((a + d + s) * proportion, canvas.height - canvas.height * g);
+   context.lineTo((a + d + s + r) * proportion, canvas.height);
+   context.stroke();   
+}
+
+
+document.onkeypress = function(evt) {
+    evt = evt || window.event;
+    var charCode = evt.keyCode || evt.which;
+    var charStr = String.fromCharCode(charCode);
+    if(charStr == 'z') play(60);
+    if(charStr == 's') play(61);
+    if(charStr == 'x') play(62);
+    if(charStr == 'd') play(63);
+    if(charStr == 'c') play(64);
+    if(charStr == 'v') play(65);
+    if(charStr == 'g') play(66);
+    if(charStr == 'b') play(67);
+    if(charStr == 'h') play(68);
+    if(charStr == 'n') play(69);
+    if(charStr == 'j') play(70);
+    if(charStr == 'm') play(71);
+};
+</script>
+
+

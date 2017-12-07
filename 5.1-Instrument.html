@@ -1,0 +1,41 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+<script src='Block.js'></script>
+<style>
+div{
+   background-color: #F0F;
+   border: 1px solid black;
+   height: 20px;
+}
+</style>
+</head>
+<body>
+<script>
+
+var context = new (window.AudioContext || window.webkitAudioContext)();
+
+function play(note){
+   var block = new Block(context);
+   block.play(note);
+   document.getElementById("div-"+note).setAttribute("style","background-color:#FF0");
+}
+</script>
+
+<button onclick="play(33)">55</button>
+<button onclick="play(45)">110</button>
+<button onclick="play(57)">220</button>
+<button onclick="play(69)">440</button>
+<button onclick="play(81)">880</button>
+<button onclick="play(93)">1760</button>
+<button onclick="play(105)">3520</button>
+
+<div onmouseover="play(50)" id='div-50'>.</div><br/>
+<div onmouseover="play(60)">.</div><br/>
+<div onmouseover="play(70)">.</div><br/>
+<div onmouseover="play(80)">.</div><br/>
+<div onmouseover="play(90)">.</div><br/>
+<div onmouseover="play(100)">.</div><br/>
+<div onmouseover="play(110)">.</div><br/>
+</body>
+</html>

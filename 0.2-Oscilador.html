@@ -1,0 +1,70 @@
+<html>
+<head>
+<meta http-equiv="Cache-Control" content="no-store" />
+<style>
+.osc {
+   background-color: linen;
+   border: 1px solid black;
+   padding: 2px;
+}
+</style>
+</head>
+<body>
+<script>
+var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+var list = [];
+
+function remove_oscillator(index){
+   var oscillator = list[index];
+   oscillator.stop(0);
+   
+   var my_element = document.getElementById("osc_" + index);
+   my_element.parentElement.removeChild(my_element);
+
+   delete list[index];
+}
+
+function add_oscillator(oscillator){
+   // draw!
+   var par = document.createElement('P');
+   par.id = "osc_" + list.length;
+   par.className = "osc";
+   var button = document.createElement('button');
+   var myIndex = list.length;
+   button.innerHTML = 'Remove';
+   button.addEventListener("click", function() {remove_oscillator(myIndex);}, false);
+   par.innerHTML = oscillator.frequency.value;
+   par.innerHTML += " - " + oscillator.type + " "; 
+   par.appendChild(button);
+   document.getElementById('osc_list').appendChild(par);
+
+   list.unshift(oscillator); // add on list
+}
+
+function createOsc(){
+	var oscillator = audioCtx.createOscillator();
+	var freq = parseInt(document.getElementById('freq').value);
+	oscillator.type = document.getElementsByTagName("option")[document.getElementById("type").selectedIndex].value;
+	oscillator.frequency.value = freq; // value in hertz
+	oscillator.start(0);
+	oscillator.connect(audioCtx.destination);
+   add_oscillator(oscillator);
+}
+
+</script>
+
+Tipo:<select id='type'>
+		<option value='sine'>Sine</option>
+		<option value='square'>Square</option>
+		<option value='sawtooth'>Sawtooth</option>
+		<option value='triangle'>Triangle</option>
+	</select>
+
+Freq:<input type=text id=freq>
+<button onclick='createOsc();'>Add Osc</button>
+
+<div id=osc_list></div>
+
+</body>
+</html>
